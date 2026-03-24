@@ -78,7 +78,7 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
             $tracking_stmt = $pdo->prepare("
                 SELECT * FROM order_tracking 
                 WHERE order_id = ?
-                ORDER BY created_at ASC
+                ORDER BY created_at DESC
             ");
             $tracking_stmt->execute([$order_id]);
             $tracking_history = $tracking_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -91,8 +91,7 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
                 $order_detail['status'] = $raw_detail_status;
             }
 
-            // Nếu chưa có tracking record HOẶC tracking records không đủ đến current status
-            // Tự động fill các bước còn lại từ pending đến current status
+            // Auto-fill timeline từ pending đến trạng thái hiện tại
             if (!empty($order_detail['status'])) {
                 $current_status_code = $order_detail['status'];
                 $all_statuses = ['pending', 'confirmed', 'preparing', 'shipping', 'completed', 'cancelled'];
@@ -101,10 +100,10 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
                 if ($current_index !== false) {
                     // Lấy danh sách các status đã có trong tracking history
                     $tracked_statuses = array_column($tracking_history, 'status');
+                    $created_time = strtotime($order_detail['created_at']);
                     
-                    // Nếu không có tracking records, tạo từ đầu
+                    // Nếu không có tracking records, tạo từ pending đến current status
                     if (count($tracking_history) === 0) {
-                        $created_time = strtotime($order_detail['created_at']);
                         for ($i = 0; $i <= $current_index; $i++) {
                             $tracking_history[] = [
                                 'status' => $all_statuses[$i],
@@ -114,27 +113,25 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
                         }
                     } else {
                         // Nếu có tracking records nhưng không đủ, thêm các bước còn lại
-                        $created_time = strtotime($order_detail['created_at']);
-                        $last_tracking_time = strtotime(end($tracking_history)['created_at']);
-                        $time_offset = 3600; // 1 giờ
-                        
                         for ($i = 0; $i <= $current_index; $i++) {
                             if (!in_array($all_statuses[$i], $tracked_statuses)) {
-                                // Thêm bước này nếu chưa có
+                                // Thêm bước này nếu chưa có - TIME tính từ lúc tạo đơn + i*1h
                                 $tracking_history[] = [
                                     'status' => $all_statuses[$i],
                                     'note' => '',
-                                    'created_at' => date('Y-m-d H:i:s', $last_tracking_time + $time_offset)
+                                    'created_at' => date('Y-m-d H:i:s', $created_time + ($i * 3600))
                                 ];
-                                $last_tracking_time += $time_offset;
                             }
                         }
-                        // Sắp xếp lại theo thời gian
-                        usort($tracking_history, function($a, $b) {
-                            return strtotime($a['created_at']) - strtotime($b['created_at']);
-                        });
                     }
                 }
+            }
+
+            // Sắp xếp tracking history theo thời gian DESC (mới nhất trước)
+            if (!empty($tracking_history)) {
+                usort($tracking_history, function($a, $b) {
+                    return strtotime($b['created_at']) - strtotime($a['created_at']);
+                });
             }
         } else {
             $_SESSION['error'] = "Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn hàng này!";
@@ -455,6 +452,17 @@ foreach ($orders as $order) {
                             <?php endif; ?>
 
                             <div class="info-row">
+                                <small>Phí vận chuyển</small>
+                                <div class="info-value-main">
+                                    <?php if (!empty($order_detail['shipping_fee']) && (int)$order_detail['shipping_fee'] > 0): ?>
+                                        <?php echo number_format($order_detail['shipping_fee'], 0, ',', '.'); ?>đ
+                                    <?php else: ?>
+                                        <span style="color: #28a745; font-weight: 600;">Miễn phí</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
                                 <small>Phương thức thanh toán</small>
                                 <div class="info-value-main">
                                     <?php 
@@ -543,7 +551,7 @@ foreach ($orders as $order) {
                             <?php 
                             $total_tracks = count($tracking_history);
                             foreach ($tracking_history as $index => $track): 
-                                $is_current = ($index == $total_tracks - 1);
+                                $is_current = ($index == 0);
                                 $track_status = $track['status'];
                                 $info = isset($status_config[$track_status]) ? $status_config[$track_status] : [
                                     'text' => $track_status,

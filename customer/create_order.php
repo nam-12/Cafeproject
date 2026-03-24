@@ -160,11 +160,11 @@ try {
         $stmt_history->execute([$item['id'], -$item['quantity'], "Đơn hàng #{$order_number}"]);
     }
 
-    // 8. Tạo tracking record cho COD (status = confirmed sẵn)
+    // 8. Tạo tracking record cho COD (status = pending - chờ admin xác nhận)
     if ($paymentMethod['type'] === 'cod') {
         $stmtTracking = $pdo->prepare("
             INSERT INTO order_tracking (order_id, status, note) 
-            VALUES (?, 'confirmed', 'Đơn hàng thanh toán khi nhận hàng (COD). Sẵn sàng chuẩn bị.')
+            VALUES (?, 'pending', 'Đơn hàng thanh toán khi nhận hàng (COD). Chờ xác nhận từ quản lý.')
         ");
         $stmtTracking->execute([$order_id]);
     }
