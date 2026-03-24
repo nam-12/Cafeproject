@@ -15,10 +15,10 @@ if (!$user_id || empty($ids)) {
 
 try {
     $pdo->beginTransaction();
-    $collected_coupons = []; 
+    $collected_coupons = [];
     
     // 1. Chuẩn bị câu lệnh kiểm tra trạng thái và điều kiện thời gian
-    // display_status đảm bảo mã chưa bị Admin tạm dừng hoặc hết hạn
+    // Sử dụng VIEW coupon_statistics để lấy display_status
     $checkStatus = $pdo->prepare("
         SELECT * FROM coupon_statistics 
         WHERE id = ? 

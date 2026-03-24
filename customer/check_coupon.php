@@ -20,25 +20,23 @@ if (empty($code)) {
 }
 
 try {
-    // 3. Truy vấn kiểm tra mã
-    // LƯU Ý: Sửa cs.usage_limit thành cs.max_usage để khớp với Database
-    // Thêm COLLATE để tránh lỗi mix collation
+    // 3. Truy van kiem tra ma
     $stmt = $pdo->prepare("
         SELECT cs.* FROM user_coupons uc 
         JOIN coupon_statistics cs ON uc.coupon_id = cs.id 
         WHERE uc.user_id = ? 
-        AND UPPER(cs.code) COLLATE utf8mb4_unicode_ci = ? 
+        AND UPPER(cs.code) = ? 
         AND uc.is_used = 0 
-        AND cs.display_status COLLATE utf8mb4_unicode_ci = 'Đang hoạt động'
-        AND (cs.max_usage IS NULL OR cs.used_count < cs.max_usage)
+        AND cs.status = 'active'
+        AND NOW() BETWEEN cs.start_date AND cs.end_date
     ");
     
     $stmt->execute([$user_id, $code]);
     $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Nếu không tìm thấy coupon thỏa mãn
+    // Neu khong tim thay coupon thoa man
     if (!$coupon) {
-        echo json_encode(['success' => false, 'message' => 'Voucher không hợp lệ, đã dùng hoặc hết lượt']);
+        echo json_encode(['success' => false, 'message' => 'Voucher khong hop le, da dung hoac het luot']);
         exit;
     }
 
@@ -56,13 +54,14 @@ try {
     if ($coupon['discount_type'] === 'percentage') {
         $discount = ($subtotal * (float)$coupon['discount_value']) / 100;
         
-        // Kiểm tra mức giảm tối đa (Max Discount)
+        // Kiểm tra mức giảm tối đa (Max Discount) - CHỈ cho percentage
         if (!empty($coupon['max_discount']) && $coupon['max_discount'] > 0) {
             if ($discount > $coupon['max_discount']) {
                 $discount = (float)$coupon['max_discount'];
             }
         }
     } else {
+        // Fixed amount - dùng đúng discount_value, không cắt qua max_discount
         $discount = (float)$coupon['discount_value'];
     }
 

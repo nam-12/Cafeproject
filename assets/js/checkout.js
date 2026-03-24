@@ -127,6 +127,11 @@ function updateOrderTotal(discountAmount) {
 
     totalDisplay.innerText = formatCurrency(finalTotal);
     if (inputFinalTotal) inputFinalTotal.value = finalTotal;
+    
+    // Dispatch custom event for IIFE to listen
+    document.dispatchEvent(new CustomEvent('couponApplied', {
+        detail: { discount: discountAmount }
+    }));
 }
 
 // --- VALIDATION & SUBMIT ---

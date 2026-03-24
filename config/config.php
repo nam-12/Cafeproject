@@ -36,12 +36,7 @@ define('BANK_ACCOUNT_NO', '0937658390');
 define('BANK_ACCOUNT_NAME', 'HOANG TUAN HUNG');
 
 // ===============================
-// 6. CẤU HÌNH THANH TOÁN
-// ===============================
-define('CURRENCY', 'VND');
-define('SHIPPING_FEE', 10000);
-define('FREE_SHIP_THRESHOLD', 200000);
-define('VAT_RATE', 0);
+
 
 // ===============================
 // 7. CẤU HÌNH EMAIL
@@ -67,6 +62,11 @@ define('APP_TIMEZONE', 'Asia/Ho_Chi_Minh');
 date_default_timezone_set(APP_TIMEZONE);
 
 // ===============================
+// ===== CẤU HÌNH GIAO HÀNG =====
+define('GOOGLE_MAPS_API_KEY', '');  // Dán API key vào đây, hoặc để '' dùng OpenStreetMap miễn phí
+define('STORE_ADDRESS', '41A Đ.Phú Diễn,Phú Diễn, Bắc Từ Liêm, Hà Nội'); // ← Thay bằng địa chỉ quán thật
+define('STORE_LAT', 21.047051);  // ← Thay bằng tọa độ latitude quán thật
+define('STORE_LNG', 105.762203); // ← Thay bằng tọa độ longitude quán thật (tra Google Maps)
 // 10. HELPER
 // ===============================
 function getConfig(string $key, $default = null) {

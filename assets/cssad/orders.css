@@ -168,6 +168,18 @@ body {
     border-radius: 50%;
 }
 
+/* Cố định/Canh chỉnh cột Thao tác trong danh sách đơn hàng */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 140px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    vertical-align: middle;
+}
+
 /* Thêm định nghĩa cho nút menu di động */
 .mobile-menu-btn {
     display: none;

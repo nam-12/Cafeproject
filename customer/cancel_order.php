@@ -44,7 +44,7 @@ try {
     // --- 5. LOGIC HOÀN TRẢ VOUCHER (MỚI) ---
     if (!empty($order['coupon_code'])) {
         // Tìm ID của coupon dựa trên code lưu trong đơn hàng
-        $stmtC = $db->prepare("SELECT id FROM coupon_statistics WHERE UPPER(code) = UPPER(?)");
+        $stmtC = $db->prepare("SELECT id FROM coupon_statistics WHERE UPPER(code) COLLATE utf8mb4_unicode_ci = UPPER(?) COLLATE utf8mb4_unicode_ci");
         $stmtC->execute([$order['coupon_code']]);
         $couponData = $stmtC->fetch();
         

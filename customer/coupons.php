@@ -31,7 +31,7 @@ $sql_my = "SELECT cs.* FROM user_coupons uc
            JOIN coupon_statistics cs ON uc.coupon_id = cs.id 
            WHERE uc.user_id = ? 
            AND uc.is_used = 0 
-           AND cs.status = 'active'
+           AND cs.status COLLATE utf8mb4_unicode_ci = 'active'
            AND NOW() <= cs.end_date";
 $stmt_my = $pdo->prepare($sql_my);
 $stmt_my->execute([$user_id]);

@@ -153,14 +153,86 @@ function getCartTotal() {
     return $total;
 }
 
-// Tính phí ship
-function calculateShippingFee($subtotal) {
-    $shippingFee = defined('SHIPPING_FEE') ? SHIPPING_FEE : 0;
-    $freeShipThreshold = defined('FREE_SHIP_THRESHOLD') ? FREE_SHIP_THRESHOLD : 0;
-    if ($subtotal >= FREE_SHIP_THRESHOLD) {
-        return 0;
+/// ================================================================
+// HÀM TÍNH PHÍ VẬN CHUYỂN
+// ================================================================
+
+/**
+ * Tính phí ship theo khoảng cách
+ * <= 2km  → 10,000đ
+ * <= 5km  → 15,000đ
+ * >  5km  → 20,000đ + 3,000đ/km vượt (làm tròn lên)
+ */
+function calculateShippingFee(float $km): int {
+    if ($km <= 2) return 10000;
+    if ($km <= 5) return 15000;
+    return 20000 + (int)(ceil($km - 5) * 3000);
+}
+
+/**
+ * Lấy khoảng cách từ quán tới địa chỉ khách
+ * Ưu tiên Google Maps API, fallback về OpenStreetMap
+ */
+function getShippingDistance(string $customerAddress): array {
+    $apiKey = defined('GOOGLE_MAPS_API_KEY') ? GOOGLE_MAPS_API_KEY : '';
+
+    if (!empty($apiKey)) {
+        return _getDistanceGoogleMaps($customerAddress, $apiKey);
     }
-    return SHIPPING_FEE;
+    return _getDistanceOpenStreetMap($customerAddress);
+}
+
+function _getDistanceGoogleMaps(string $address, string $apiKey): array {
+    $origin      = urlencode(STORE_ADDRESS);
+    $destination = urlencode($address);
+    $url = "https://maps.googleapis.com/maps/api/distancematrix/json"
+         . "?origins={$origin}&destinations={$destination}&mode=driving&language=vi&key={$apiKey}";
+
+    $ctx  = stream_context_create(['http' => ['timeout' => 6]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if (!$resp) return _fallbackDistance($address);
+
+    $data = json_decode($resp, true);
+    if (($data['status'] ?? '') !== 'OK'
+        || ($data['rows'][0]['elements'][0]['status'] ?? '') !== 'OK') {
+        return ['success' => false, 'km' => 3.0, 'error' => 'Địa chỉ không tìm thấy trên bản đồ'];
+    }
+
+    $km = round($data['rows'][0]['elements'][0]['distance']['value'] / 1000, 2);
+    return ['success' => true, 'km' => $km, 'error' => ''];
+}
+
+function _getDistanceOpenStreetMap(string $address): array {
+    $encoded = urlencode($address . ', Việt Nam');
+    $url     = "https://nominatim.openstreetmap.org/search?q={$encoded}&format=json&limit=1";
+    $ctx     = stream_context_create(['http' => [
+        'header'  => "User-Agent: CafeProject/1.0\r\n",
+        'timeout' => 6
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if (!$resp) return _fallbackDistance($address);
+
+    $results = json_decode($resp, true);
+    if (empty($results)) {
+        return ['success' => false, 'km' => 3.0, 'error' => 'Không geocode được địa chỉ'];
+    }
+
+    $lat = (float)$results[0]['lat'];
+    $lng = (float)$results[0]['lon'];
+
+    // Haversine formula (đường chim bay × 1.3 ≈ đường bộ)
+    $R    = 6371;
+    $dLat = deg2rad($lat - STORE_LAT);
+    $dLng = deg2rad($lng - STORE_LNG);
+    $a    = sin($dLat/2)**2 + cos(deg2rad(STORE_LAT)) * cos(deg2rad($lat)) * sin($dLng/2)**2;
+    $km   = round($R * 2 * atan2(sqrt($a), sqrt(1-$a)) * 1.3, 2);
+
+    return ['success' => true, 'km' => $km, 'error' => ''];
+}
+
+function _fallbackDistance(string $address): array {
+    error_log("[Shipping] Geocode failed for: {$address} — dùng mặc định 3km");
+    return ['success' => false, 'km' => 3.0, 'error' => 'Dùng khoảng cách ước lượng'];
 }
 
 // Xóa toàn bộ giỏ hàng

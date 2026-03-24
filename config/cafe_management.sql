@@ -213,6 +213,8 @@ CREATE TABLE orders (
     shipping_address VARCHAR(255),
     sub_total DECIMAL(10,2) NOT NULL DEFAULT 0,
     shipping_fee DECIMAL(10,2) NOT NULL DEFAULT 0,
+    delivery_address VARCHAR(500) DEFAULT NULL,
+    distance FLOAT DEFAULT NULL,
     coupon_id INT NULL,
     coupon_code VARCHAR(50) NULL,
     discount_amount DECIMAL(10,2) DEFAULT 0,
