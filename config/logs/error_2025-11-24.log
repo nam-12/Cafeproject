@@ -1,0 +1,81 @@
+[2025-11-24 00:03:47] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 00:04:21] Momo IPN Received {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240004162108","requestId":"17639174577036","amount":40000,"orderInfo":"Thanh toan don hang ORD202511240004162108","orderType":"momo_wallet","transId":1763917460104,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917460104,"extraData":"eyJwYXltZW50X2lkIjo0Mn0=","signature":"d2961ab9cbb094438f655e1bae3ee58480547ae3909ebf97d5a47453f85b73d8"}}
+[2025-11-24 00:04:21] Momo IPN: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240004162108","requestId":"17639174577036","amount":40000,"orderInfo":"Thanh toan don hang ORD202511240004162108","orderType":"momo_wallet","transId":1763917460104,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917460104,"extraData":"eyJwYXltZW50X2lkIjo0Mn0=","signature":"d2961ab9cbb094438f655e1bae3ee58480547ae3909ebf97d5a47453f85b73d8"}}
+[2025-11-24 00:04:21] Momo IPN Error: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240004162108","requestId":"17639174577036","amount":40000,"orderInfo":"Thanh toan don hang ORD202511240004162108","orderType":"momo_wallet","transId":1763917460104,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917460104,"extraData":"eyJwYXltZW50X2lkIjo0Mn0=","signature":"d2961ab9cbb094438f655e1bae3ee58480547ae3909ebf97d5a47453f85b73d8"},"trace":"#0 {main}"}
+[2025-11-24 00:09:53] Momo IPN Received {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240009484880","requestId":"17639177888411","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240009484880","orderType":"momo_wallet","transId":1763917792756,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917792756,"extraData":"eyJwYXltZW50X2lkIjo0M30=","signature":"f674ffdcfb99a9459c75287537ea7b88bdc8acb6e946c5e4f2ca6b588bcbe317"}}
+[2025-11-24 00:09:53] Momo IPN: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240009484880","requestId":"17639177888411","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240009484880","orderType":"momo_wallet","transId":1763917792756,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917792756,"extraData":"eyJwYXltZW50X2lkIjo0M30=","signature":"f674ffdcfb99a9459c75287537ea7b88bdc8acb6e946c5e4f2ca6b588bcbe317"}}
+[2025-11-24 00:09:53] Momo IPN Error: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240009484880","requestId":"17639177888411","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240009484880","orderType":"momo_wallet","transId":1763917792756,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763917792756,"extraData":"eyJwYXltZW50X2lkIjo0M30=","signature":"f674ffdcfb99a9459c75287537ea7b88bdc8acb6e946c5e4f2ca6b588bcbe317"},"trace":"#0 {main}"}
+[2025-11-24 00:14:38] Momo IPN Received {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240014337091","requestId":"17639180733282","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240014337091","orderType":"momo_wallet","transId":1763918076862,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763918076862,"extraData":"eyJwYXltZW50X2lkIjo0NH0=","signature":"54a2d4b86f08907f69f3a6d42f034da768e2449f3181ecc6d5b0ce0ff280010a"}}
+[2025-11-24 00:14:38] Momo IPN: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240014337091","requestId":"17639180733282","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240014337091","orderType":"momo_wallet","transId":1763918076862,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763918076862,"extraData":"eyJwYXltZW50X2lkIjo0NH0=","signature":"54a2d4b86f08907f69f3a6d42f034da768e2449f3181ecc6d5b0ce0ff280010a"}}
+[2025-11-24 00:14:38] Momo IPN Error: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511240014337091","requestId":"17639180733282","amount":30000,"orderInfo":"Thanh toan don hang ORD202511240014337091","orderType":"momo_wallet","transId":1763918076862,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763918076862,"extraData":"eyJwYXltZW50X2lkIjo0NH0=","signature":"54a2d4b86f08907f69f3a6d42f034da768e2449f3181ecc6d5b0ce0ff280010a"},"trace":"#0 {main}"}
+[2025-11-24 00:48:16] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:29:30] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:30:19] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:33:37] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:39:27] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:41:55] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:43:02] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:53:48] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:53:59] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 01:56:47] updateOrderStatus: no rows affected {"order_id":72,"status":"confirmed"}
+[2025-11-24 02:02:12] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 02:03:51] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 02:13:19] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 02:15:00] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:00:20] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:04:26] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:09:12] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:09:41] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:09:44] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:11:54] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:11:57] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:16:50] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:16:54] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:17:03] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:24:32] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:24:37] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:24:41] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:24:44] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:25:07] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:36:02] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:36:06] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:42:58] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:43:05] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:43:09] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:43:13] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:48:00] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:48:04] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:48:23] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:48:56] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:48:59] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:49:03] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:52:13] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 14:52:17] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:00:42] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:06:57] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:07:07] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:13:23] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:13:26] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:13:31] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:14:07] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:14:32] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:14:35] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:15:21] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:15:37] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:16:45] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 15:20:32] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:17:57] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:18:05] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:19:08] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:19:12] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:19:20] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:19:53] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:29:58] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:36:30] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:37:01] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 18:37:48] Cancel Order Error: Không thể hủy đơn hàng ở trạng thái này! 
+[2025-11-24 19:37:25] Manual Payment Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'payment_method' in 'field list' 
+[2025-11-24 22:58:30] Momo IPN Received {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511242258239275","requestId":"17639999039082","amount":45000,"orderInfo":"Thanh toan don hang ORD202511242258239275","orderType":"momo_wallet","transId":1763999909936,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763999909936,"extraData":"eyJwYXltZW50X2lkIjozfQ==","signature":"c9f72f7545ce149d58f4cb8ca418d3318c20dcee7528295262f29737e91909cb"}}
+[2025-11-24 22:58:30] Momo IPN: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511242258239275","requestId":"17639999039082","amount":45000,"orderInfo":"Thanh toan don hang ORD202511242258239275","orderType":"momo_wallet","transId":1763999909936,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763999909936,"extraData":"eyJwYXltZW50X2lkIjozfQ==","signature":"c9f72f7545ce149d58f4cb8ca418d3318c20dcee7528295262f29737e91909cb"}}
+[2025-11-24 22:58:30] Momo IPN Error: Invalid signature {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511242258239275","requestId":"17639999039082","amount":45000,"orderInfo":"Thanh toan don hang ORD202511242258239275","orderType":"momo_wallet","transId":1763999909936,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763999909936,"extraData":"eyJwYXltZW50X2lkIjozfQ==","signature":"c9f72f7545ce149d58f4cb8ca418d3318c20dcee7528295262f29737e91909cb"},"trace":"#0 {main}"}
+[2025-11-24 23:13:54] Momo IPN Received {"data":{"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511242313497367","requestId":"17640008303486","amount":45000,"orderInfo":"Thanh toan don hang ORD202511242313497367","orderType":"momo_wallet","transId":1764000834175,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1764000834175,"extraData":"eyJwYXltZW50X2lkIjo0fQ==","signature":"32a80201cb03d3c6716ff64a94e6fcc607a5f22cbe862590a6796fb4045579d9"}}

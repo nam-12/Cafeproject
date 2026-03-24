@@ -1,0 +1,85 @@
+.navbar-premium {
+    background: rgba(45, 27, 0, 0.85);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    padding: 1rem 0;
+    box-shadow:
+        0 4px 20px rgba(45, 27, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    animation: slideDown 0.6s ease-out;
+    transition: var(--transition);
+}
+
+.navbar-scrolled {
+    background: rgba(45, 27, 0, 0.95);
+    padding: 0.7rem 0;
+    box-shadow: 0 4px 25px rgba(45, 27, 0, 0.3);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.navbar-brand-premium {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1.5px;
+    transition: var(--transition);
+    text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.navbar-brand-premium:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+}
+
+.nav-link-premium {
+    color: var(--cream) !important;
+    font-weight: 500;
+    padding: 0.7rem 1.2rem !important;
+    position: relative;
+    transition: var(--transition);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.8px;
+    border-radius: 8px;
+    margin: 0 0.2rem;
+}
+
+.nav-link-premium::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    transition: var(--transition);
+    transform: translateX(-50%);
+}
+
+.nav-link-premium:hover {
+    color: var(--gold) !important;
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.nav-link-premium:hover::after {
+    width: 70%;
+}

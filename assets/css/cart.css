@@ -1,0 +1,190 @@
+/* =========================
+   COFFEE PREMIUM CART CSS
+   ========================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --coffee-dark: #2D1B00;
+    --coffee-brown: #3E2723;
+    --coffee-medium: #5D4037;
+    --coffee-light: #8D6E63;
+    --cream: #FFF8E7;
+    --cream-dark: #F5E6D3;
+    --gold: #D4AF37;
+    --gold-light: #E5C158;
+    --gold-dark: #B8941F;
+    --white: #FFFFFF;
+    --shadow-light: 0 4px 12px rgba(45, 27, 0, 0.12);
+    --shadow-medium: 0 8px 24px rgba(45, 27, 0, 0.18);
+    --shadow-heavy: 0 12px 36px rgba(45, 27, 0, 0.25);
+    --radius: 16px;
+    --transition: all 0.3s ease;
+}
+
+body {
+    background: var(--cream);
+    font-family: "Poppins", sans-serif;
+    color: var(--coffee-dark);
+}
+
+/* HEADER */
+.cart-header h2 {
+    font-weight: 700;
+    color: var(--coffee-dark);
+    margin: 24px 0;
+}
+
+/* CART ITEM CARD */
+.cart-item {
+    background: var(--white);
+    padding: 18px;
+    border-radius: var(--radius);
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+}
+
+.cart-item:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-3px);
+}
+
+/* IMAGE ICON */
+.item-image {
+    width: 100%;
+    height: 70px;
+    background: var(--coffee-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    color: var(--gold-light);
+    font-size: 32px;
+}
+
+/* PRODUCT NAME & PRICE */
+.item-name {
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--coffee-dark);
+}
+
+.item-price {
+    color: var(--gold-dark);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* INPUT SỐ LƯỢNG */
+.quantity-input {
+    text-align: center;
+    border-radius: var(--radius);
+    border: 2px solid var(--coffee-light);
+}
+
+.quantity-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 5px rgba(212,175,55,0.5);
+}
+
+/* ITEM TOTAL */
+.item-total-display {
+    font-size: 18px;
+    color: var(--coffee-dark);
+}
+
+/* NÚT XOÁ */
+.btn-remove {
+    background: transparent;
+    border: none;
+    color: var(--coffee-brown);
+    font-size: 18px;
+    transition: var(--transition);
+}
+
+.btn-remove:hover {
+    color: #bd0000;
+    transform: scale(1.15);
+}
+
+/* SUMMARY CARD */
+.summary-card {
+    background: var(--cream-dark);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-medium);
+    position: sticky;
+    top: 100px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.summary-total span,
+.summary-total strong {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* CHECKOUT BUTTON */
+.btn-checkout {
+    width: 100%;
+    background: var(--gold);
+    color: var(--coffee-dark);
+    font-weight: 700;
+    border: none;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-size: 17px;
+    margin-top: 12px;
+    transition: var(--transition);
+}
+
+.btn-checkout:hover {
+    background: var(--gold-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+}
+
+/* BUTTONS UPDATE / CLEAR */
+.btn-primary {
+    background: var(--coffee-dark) !important;
+    border: none;
+    border-radius: var(--radius);
+}
+
+.btn-primary:hover {
+    background: var(--coffee-medium) !important;
+}
+
+.btn-outline-danger {
+    border-radius: var(--radius);
+}
+
+/* EMPTY CART VIEW */
+.empty-cart {
+    text-align: center;
+    padding: 50px;
+}
+
+.empty-cart i {
+    font-size: 70px;
+    color: var(--coffee-medium);
+    margin-bottom: 18px;
+}
+
+.empty-cart .btn-primary {
+    background: var(--coffee-dark) !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .cart-item {
+        padding: 12px;
+    }
+}

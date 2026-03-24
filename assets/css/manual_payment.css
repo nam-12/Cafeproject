@@ -1,0 +1,227 @@
+:root {
+    --primary-color: #6f4e37;
+    --secondary-color: #d4a373;
+    --accent-color: #ff6b6b; /* Màu đỏ cho số tiền */
+    --highlight-bg: #fffbe6; /* Nền vàng nhạt cho thông tin quan trọng */
+    --border-color: #e0e0e0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.payment-container {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 15px;
+}
+
+.payment-instructions {
+    flex: 3;
+}
+
+.order-summary-sidebar {
+    flex: 2;
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 20px;
+    max-height: fit-content;
+}
+
+.page-header h1 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.instruction-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Bank Info Styles */
+.bank-info {
+    margin-top: 1.5rem;
+    border: 2px solid var(--secondary-color);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row .label {
+    font-weight: 500;
+    color: #555;
+}
+
+.info-row strong {
+    font-size: 1.1rem;
+}
+
+.highlight {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.amount strong {
+    color: var(--accent-color);
+    font-size: 1.4rem;
+}
+
+.btn-copy {
+    background: none;
+    border: 1px solid var(--secondary-color);
+    color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-copy:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+/* QR Section */
+.qr-code-section {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.qr-code-container {
+    border: 5px solid var(--secondary-color);
+    padding: 10px;
+    border-radius: 15px;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.qr-code-image {
+    width: 250px;
+    height: 250px;
+    display: block;
+}
+
+.qr-error {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.qr-note {
+    color: #777;
+}
+
+/* Confirmation Form */
+.confirm-form {
+    margin-top: 2rem;
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.btn-success:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
+/* Order Summary Sidebar Styles */
+.order-summary-sidebar h2 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.item-info {
+    display: flex;
+    gap: 10px;
+}
+
+.item-name {
+    font-weight: 500;
+    margin: 0;
+}
+
+.item-qty {
+    color: #777;
+    margin: 0;
+}
+
+.item-price {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.summary-total {
+    padding: 1rem 0;
+    border-top: 2px solid var(--primary-color);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2rem;
+}
+
+.total-row .amount {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.summary-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.summary-actions .btn {
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .payment-container {
+        flex-direction: column;
+        margin: 2rem 1rem;
+    }
+    .order-summary-sidebar {
+        position: static;
+    }
+}

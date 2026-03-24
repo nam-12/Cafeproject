@@ -1,0 +1,239 @@
+:root {
+    --primary-color: #f0f4ff;
+    --primary-light: #f8faff;
+    --primary-dark: #64748b;
+    --secondary-color: #fef3c7;
+    --success-color: #dcfce7;
+    --danger-color: #fee2e2;
+    --warning-color: #fef3c7;
+    --light-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --border-dark: #94a3b8; /* Viền đậm đặc trưng */
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    --coffee-dark: #2D1B00;
+    --coffee-brown: #3E2723;
+    --coffee-medium: #5D4037;
+    --coffee-light: #8D6E63;
+    --cream: #FFF8E7;
+    --cream-dark: #F5E6D3;
+    --gold: #D4AF37;
+    --gold-light: #E5C158;
+    --white: #FFFFFF;
+    --shadow-sm: 0 2px 8px rgba(45, 27, 0, 0.1);
+    --shadow-md: 0 4px 20px rgba(45, 27, 0, 0.15);
+    --shadow-lg: 0 8px 32px rgba(45, 27, 0, 0.2);
+    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+    color: var(--coffee-dark);
+    line-height: 1.7;
+    min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+}
+
+/* Tab Navigation Style tương tự Admin */
+.nav-tabs-premium {
+    border: none;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.nav-tabs-premium .nav-link {
+    border: 2px solid var(--cream-dark) !important;
+    border-radius: 12px !important;
+    background-color: var(--white);
+    color: var(--coffee-medium);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs-premium .nav-link.active {
+    background-color: #dbeafe !important; /* Màu xanh light của btn-primary */
+    color: #1e40af !important;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Coupon Card Style - Đồng bộ với content-card */
+.coupon-card {
+    background: var(--white);
+    border: 2px solid var(--cream-dark);
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    position: relative;
+}
+
+.coupon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Phần bên trái - Icon */
+.coupon-left {
+    width: 100px;
+    background: var(--cream);
+    border-right: 2px solid var(--cream-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.coupon-icon {
+    font-size: 2rem;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+}
+
+.coupon-type {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    text-align: center;
+}
+
+/* Phần bên phải - Nội dung */
+.coupon-right {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.coupon-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.coupon-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* Badge chi tiết (giống status-badge) */
+.detail-item {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.coupon-expiry {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #991b1b; /* Màu đỏ của btn-danger */
+    margin-top: 0.5rem;
+}
+
+/* Code Box - Khu vực mã */
+.code-box {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    background: var(--primary-light);
+    border: 2px dashed var(--border-dark);
+    padding: 0.5rem;
+    border-radius: 12px;
+}
+
+.code-text {
+    flex: 1;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-weight: 700;
+    color: #1e40af;
+    padding-left: 0.5rem;
+}
+
+/* Nút bấm đồng bộ hoàn toàn với products.css */
+.btn-collect, .btn-copy {
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-collect {
+    background-color: #dbeafe;
+    color: #1e40af;
+    width: 100%;
+}
+
+.btn-collect:hover {
+    background-color: #bfdbfe;
+}
+
+.btn-copy {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.btn-copy:hover {
+    background-color: #bbf7d0;
+}
+
+/* Trạng thái đã thu thập */
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+}
+
+/* Toast thông báo */
+.toast {
+    border: 2px solid var(--border-dark) !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .coupon-card {
+        flex-direction: column;
+    }
+    .coupon-left {
+        width: 100%;
+        flex-direction: row;
+        gap: 1rem;
+        border-right: none;
+        border-bottom: 2px solid var(--border-dark);
+        padding: 0.75rem;
+    }
+    .coupon-icon { margin-bottom: 0; font-size: 1.5rem; }
+}

@@ -1,0 +1,72 @@
+:root {
+    --primary-color: #6f4e37;
+    --accent-color: #007bff; /* Màu xanh dương cho redirect */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.redirect-box {
+    background: white;
+    border-radius: 20px;
+    padding: 4rem 3rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+}
+
+.redirect-icon {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.redirect-box h1 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.redirect-box p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.btn-continue {
+    background: var(--primary-color);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-continue:hover {
+    background: #5a3d2b;
+}
+
+/* Thẻ <small> cho link thủ công */
+.manual-link {
+    display: block;
+    margin-top: 1.5rem;
+    color: #777;
+}
+
+.manual-link a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+}

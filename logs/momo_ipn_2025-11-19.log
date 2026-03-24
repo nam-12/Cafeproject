@@ -1,0 +1,28 @@
+
+================================================================================
+[2025-11-19 11:52:27] MoMo IPN Request Received
+Method: POST
+Remote IP: ::1
+Headers: {"HOST":"mesogleal-edelmira-euphorbiaceous.ngrok-free.dev","USER_AGENT":"Apache-HttpClient\/4.5.13 (Java\/15.0.2)","ACCEPT":"application\/json, application\/x-www-form-urlencoded","ACCEPT_ENCODING":"gzip,deflate","X_FORWARDED_FOR":"118.69.210.244","X_FORWARDED_HOST":"mesogleal-edelmira-euphorbiaceous.ngrok-free.dev","X_FORWARDED_PROTO":"https"}
+Raw POST Data: {"partnerCode":"MOMOHGKY20251118","orderId":"ORD202511191152121614","requestId":"17635279327456","amount":32000,"orderInfo":"Thanh toan don hang ORD202511191152121614","orderType":"momo_wallet","transId":1763527947570,"resultCode":1006,"message":"Giao dịch bị từ chối bởi người dùng.","payType":"","responseTime":1763527947570,"extraData":"eyJwYXltZW50X2lkIjoyMX0=","signature":"d567b2375667432dd2203b99c1ae39d053f59fc89ad84bc1e7ddc118abdc85fe"}
+Parsed Data: {
+    "partnerCode": "MOMOHGKY20251118",
+    "orderId": "ORD202511191152121614",
+    "requestId": "17635279327456",
+    "amount": 32000,
+    "orderInfo": "Thanh toan don hang ORD202511191152121614",
+    "orderType": "momo_wallet",
+    "transId": 1763527947570,
+    "resultCode": 1006,
+    "message": "Giao dịch bị từ chối bởi người dùng.",
+    "payType": "",
+    "responseTime": 1763527947570,
+    "extraData": "eyJwYXltZW50X2lkIjoyMX0=",
+    "signature": "d567b2375667432dd2203b99c1ae39d053f59fc89ad84bc1e7ddc118abdc85fe"
+}
+Step 1: Data received OK
+Step 2: Verifying signature...
+ERROR: Invalid signature
+Expected signature calculation with SECRET_KEY: JoXN49KeDslEdW23V6JZDzJDxUujQslx
+IPN Processing Completed
+================================================================================

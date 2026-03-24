@@ -1,0 +1,205 @@
+:root {
+    --primary-color: #6f4e37;
+    --secondary-color: #d4a373;
+    --accent-color: #ff6b6b;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.review-container {
+    background: white;
+    border-radius: 30px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    max-width: 700px;
+    margin: 0 auto;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.review-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.product-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.product-icon i {
+    font-size: 3rem;
+    color: white;
+}
+
+.product-info {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 5px solid var(--primary-color);
+}
+
+.product-select-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+}
+
+.product-select-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.rating-section {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.5rem 0;
+}
+
+.star {
+    font-size: 3rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.star:hover,
+.star.active {
+    color: #ffc107;
+    transform: scale(1.2);
+}
+
+.star.hovered {
+    color: #ffc107;
+    transform: scale(1.1);
+}
+
+.rating-text {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.comment-section {
+    margin-bottom: 2rem;
+}
+
+.form-control {
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(111, 78, 55, 0.15);
+}
+
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #5a3d2b 100%);
+    border: none;
+    padding: 15px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.btn-submit:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(111, 78, 55, 0.3);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.emoji-feedback {
+    display: none;
+    font-size: 4rem;
+    margin: 1rem 0;
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.success-message {
+    text-align: center;
+    padding: 3rem;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 3rem;
+    color: white;
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
