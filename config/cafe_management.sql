@@ -34,7 +34,7 @@ CREATE TABLE products (
     discount_start_date DATETIME NULL,
     discount_end_date DATETIME NULL,
     is_featured TINYINT(1) DEFAULT 0,
-    
+    ai_metadata TEXT,
     image VARCHAR(255),
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -355,22 +355,97 @@ INSERT INTO categories (name, description) VALUES
 ('Bánh ngọt', 'Các loại bánh và đồ ăn nhẹ'),
 ('Mocktail', 'Đồ uống không cồn pha chế kiểu cocktail');
 
-INSERT INTO products (category_id, name, description, price) VALUES
-(1, 'Cà phê đen nóng', 'Cà phê đen truyền thống', 20000),
-(1, 'Cà phê sữa nóng', 'Cà phê pha phin với sữa đặc', 25000),
-(2, 'Cà phê đen đá', 'Cà phê đen pha lạnh', 22000),
-(2, 'Bạc xỉu', 'Cà phê sữa nhiều sữa ít cà phê', 28000),
-(3, 'Trà sữa truyền thống', 'Trà sữa Đài Loan', 30000),
-(3, 'Trà đào cam sả', 'Trà trái cây thanh mát', 35000),
-(4, 'Sinh tố bơ', 'Sinh tố bơ thơm béo', 40000),
-(5, 'Bánh flan', 'Bánh flan caramen', 15000),
-(6, 'Blackberry Mojito', 'Blackberry Mojito là một biến thể của Mojito truyền thống, dùng quả mâm xôi đen (blackberry) để tạo màu tím đậm và vị chua ngọt đặc trưng.', 55000);
+INSERT INTO products 
+(category_id, name, description, ingredients, calories, price, 
+ discount_type, discount_value, sale_price, 
+ discount_start_date, discount_end_date, 
+ is_featured, image, status)
+VALUES
+
+-- CÀ PHÊ NÓNG
+(1, 'Cà phê đen nóng', 'Cà phê đen truyền thống đậm vị', 
+ 'Cà phê nguyên chất', 5, 20000, 
+ 'percentage', 20, 16000, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 
+ 1, 'coffee_black_hot.jpg', 'active'),
+
+(1, 'Cà phê sữa nóng', 'Cà phê pha phin với sữa đặc', 
+ 'Cà phê, sữa đặc', 120, 25000, 
+ 'none', 0, NULL, 
+ NULL, NULL, 
+ 0, 'coffee_milk_hot.jpg', 'active'),
+
+-- CÀ PHÊ ĐÁ
+(2, 'Cà phê đen đá', 'Cà phê đen pha lạnh', 
+ 'Cà phê, đá', 10, 22000, 
+ 'fixed', 2000, 20000, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY), 
+ 1, 'coffee_black_ice.jpg', 'active'),
+
+(2, 'Bạc xỉu', 'Cà phê sữa nhiều sữa ít cà phê', 
+ 'Cà phê, sữa, đá', 150, 28000, 
+ 'percentage', 50, 14000, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 1 DAY), 
+ 1, 'bac_xiu.jpg', 'active'),
+
+-- TRÀ SỮA
+(3, 'Trà sữa truyền thống', 'Trà sữa Đài Loan chuẩn vị', 
+ 'Trà đen, sữa, trân châu', 250, 30000, 
+ 'none', 0, NULL, 
+ NULL, NULL, 
+ 0, 'milk_tea.jpg', 'active'),
+
+(3, 'Trà đào cam sả', 'Trà trái cây thanh mát', 
+ 'Trà, đào, cam, sả', 180, 35000, 
+ 'percentage', 10, 31500, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 
+ 1, 'peach_tea.jpg', 'active'),
+
+-- SINH TỐ
+(4, 'Sinh tố bơ', 'Sinh tố bơ thơm béo', 
+ 'Bơ, sữa, đá', 300, 40000, 
+ 'none', 0, NULL, 
+ NULL, NULL, 
+ 0, 'avocado_smoothie.jpg', 'active'),
+
+(4, 'Sinh tố dâu', 'Sinh tố dâu tươi', 
+ 'Dâu, sữa, đá', 220, 38000, 
+ 'fixed', 3000, 35000, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 
+ 0, 'strawberry_smoothie.jpg', 'active'),
+
+-- BÁNH
+(5, 'Bánh flan', 'Bánh flan caramen mềm mịn', 
+ 'Trứng, sữa, đường', 200, 15000, 
+ 'none', 0, NULL, 
+ NULL, NULL, 
+ 0, 'flan.jpg', 'active'),
+
+(5, 'Bánh tiramisu', 'Bánh tiramisu Ý', 
+ 'Phô mai, cà phê, cacao', 350, 45000, 
+ 'percentage', 15, 38250, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 3 DAY), 
+ 1, 'tiramisu.jpg', 'active'),
+
+-- MOCKTAIL
+(6, 'Blackberry Mojito', 'Mocktail mâm xôi đen', 
+ 'Mâm xôi, soda, bạc hà', 120, 55000, 
+ 'none', 0, NULL, 
+ NULL, NULL, 
+ 1, 'blackberry_mojito.jpg', 'active'),
+
+(6, 'Blue Lagoon', 'Mocktail xanh mát lạnh', 
+ 'Blue curacao, soda, chanh', 140, 50000, 
+ 'percentage', 20, 40000, 
+ NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 
+ 1, 'blue_lagoon.jpg', 'active');
+
+DELETE FROM inventory;
 
 INSERT INTO inventory (product_id, quantity, min_quantity) VALUES
-(1, 50, 10), (2, 45, 10), (3, 40, 10),
-(4, 35, 10), (5, 30, 10), (6, 25, 10),
-(7, 20, 10), (8, 15, 10), (9, 50, 10);
-
+(1, 50, 10),(2, 40, 10),(3, 45, 10),(4, 30, 10),
+(5, 35, 10),(6, 25, 10),(7, 20, 10),(8, 18, 10),
+(9, 60, 10),(10, 15, 10),(11, 22, 10),(12, 28, 10);
 -- ============================================
 -- CẬP NHẬT CƠ SỞ DỮ LIỆU HIỆN TẠI (NẾU CẦN)
 -- ============================================
@@ -540,7 +615,15 @@ SET discount_type = 'percentage', discount_value = 50.00, sale_price = 14000,
     discount_start_date = NOW(), discount_end_date = DATE_ADD(NOW(), INTERVAL 1 DAY),
     is_featured = 1
 WHERE id = 4;
-
+UPDATE products p
+LEFT JOIN categories c ON p.category_id = c.id
+SET p.ai_metadata = CONCAT(
+    'Tên: ', p.name, '. ',
+    'Danh mục: ', c.name, '. ',
+    'Giá: ', p.price, '. ',
+    'Mô tả: ', p.description, '. ',
+    'Thành phần: ', p.ingredients
+);
 -- ============================================
 -- STORED PROCEDURES
 -- ============================================
@@ -703,7 +786,71 @@ FROM products p
 LEFT JOIN categories c ON p.category_id = c.id
 WHERE p.is_featured = 1 AND p.status = 'active'
 ORDER BY p.created_at DESC;
+-- ============================================================
+-- migration_ai_v2.sql
+-- Tối ưu cho dự án Cafe & Gemini API
+-- ============================================================
 
+-- 1. Bảng lưu lịch sử hội thoại (Tăng cường hiệu năng bằng Index)
+CREATE TABLE IF NOT EXISTS `chat_history` (
+    `id`          INT(11)          NOT NULL AUTO_INCREMENT,
+    `session_id`  VARCHAR(128)     NOT NULL COMMENT 'PHP hoặc JWT session ID',
+    `user_id`     INT(11)          NULL     COMMENT 'Liên kết bảng users nếu có',
+    `role`        ENUM('user','model') NOT NULL COMMENT 'Gemini dùng role model thay vì assistant',
+    `message`     TEXT             NOT NULL,
+    `created_at`  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_session_time` (`session_id`, `created_at`), -- Tối ưu cho việc lấy lịch sử theo thời gian
+    CONSTRAINT `fk_chat_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2. Bảng Log tìm kiếm AI (Phân tích insight khách hàng)
+CREATE TABLE IF NOT EXISTS `ai_search_log` (
+    `id`          INT(11)      NOT NULL AUTO_INCREMENT,
+    `session_id`  VARCHAR(128) NOT NULL,
+    `user_id`     INT(11)      NULL,
+    `query`       VARCHAR(500) NOT NULL COMMENT 'Câu hỏi tự nhiên của khách',
+    `response_ai` TEXT         NULL     COMMENT 'Câu trả lời của AI',
+    `clicked_product_id` INT(11) NULL   COMMENT 'Sản phẩm khách nhấn vào sau khi AI gợi ý',
+    `created_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_query_text` (`query`(100)),
+    CONSTRAINT `fk_log_product` FOREIGN KEY (`clicked_product_id`) REFERENCES `products`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 3. Bảng Cấu hình hệ thống (Cập nhật sang Gemini)
+CREATE TABLE IF NOT EXISTS `ai_settings` (
+    `setting_key`   VARCHAR(100) NOT NULL,
+    `setting_value` TEXT         NOT NULL,
+    `description`   VARCHAR(255) NULL,
+    PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Chèn cấu hình Gemini mới nhất
+INSERT IGNORE INTO `ai_settings` (`setting_key`, `setting_value`, `description`) VALUES
+    ('gemini_api_key',   'AIzaSy...', 'API Key từ Google AI Studio'),
+    ('gemini_model',     'gemini-1.5-flash', 'Model mặc định: flash (nhanh) hoặc pro (thông minh)'),
+    ('ai_bot_status',    '1', '0: Tắt, 1: Bật'),
+    ('ai_temperature',   '0.7', 'Độ sáng tạo của AI (0.1 - 1.0)');
+
+-- 4. Cập nhật bảng Products để AI "đọc" dữ liệu tốt hơn
+-- Dùng 'IF NOT EXISTS' cho cột là tính năng của MariaDB/MySQL 8.0.19+
+-- Nếu lỗi, hãy chạy lệnh ADD COLUMN bình thường.
+ALTER TABLE `products` 
+    ADD COLUMN IF NOT EXISTS `ai_metadata` TEXT NULL 
+    COMMENT 'Dữ liệu thô để AI phân tích: vị, thành phần, calo...';
+
+-- 5. Trigger/Update để tự động gom dữ liệu vào ai_metadata
+-- Việc này giúp bạn không phải gửi quá nhiều cột sang API, chỉ cần gửi 1 cột metadata
+UPDATE `products` p
+LEFT JOIN `categories` c ON p.category_id = c.id
+SET p.ai_metadata = CONCAT(
+    'Món: ', p.name, '. ',
+    'Nhóm: ', IFNULL(c.name, 'Đồ uống'), '. ',
+    'Mô tả: ', IFNULL(p.description, 'Đang cập nhật'), '. ',
+    'Giá: ', FORMAT(p.price, 0), ' VNĐ. ',
+    'Thành phần: ', IFNULL(p.ingredients, 'Tự nhiên')
+);
 -- ============================================
 -- EVENT SCHEDULER
 -- ============================================

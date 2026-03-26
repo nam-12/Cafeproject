@@ -66,6 +66,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/index.css">
+    <link rel="stylesheet" href="../assets/css/ai_components.css">
     
     <style>
         .pagination-container { margin-top: 50px; display: flex; justify-content: center; }
@@ -102,11 +103,13 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
             <div class="search-container-premium">
                 <form id="searchForm" onsubmit="handleProductFilter(event)">
                     <input type="text" id="searchInput" class="search-input-premium"
-                        placeholder="Tìm kiếm sản phẩm yêu thích của bạn..."
+                        placeholder="Tìm kiếm sản phẩm (AI + tiêu chuẩn)..."
                         value="<?php echo htmlspecialchars($search); ?>">
                     <button type="submit" class="search-btn-premium">
                         <i class="fas fa-search me-2"></i>Tìm kiếm
                     </button>
+                    <div id="ai-search-reason" class="ai-reason-text" style="display:none; margin-top: 8px;"></div>
+                    <div id="ai-search-results" class="ai-results-dropdown" style="display:none;"></div>
                 </form>
             </div>
         </div>
@@ -230,6 +233,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     </section>
 
     <?php include '../templates/footer.php'; ?>
+    <?php include 'chatbot_widget.php'; ?>
 
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -289,6 +293,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/ai_search.js"></script>
     <script>
         // Khai báo biến toàn cục bằng 'let' để có thể ghi đè khi AJAX fetch_products.php
         let currentProducts = <?php echo json_encode($products); ?>;

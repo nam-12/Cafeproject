@@ -309,6 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
 });
 </script>
-
+<?php include 'chatbot_widget.php'; ?>
 </body>
 </html>

@@ -57,7 +57,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'check') {
     'calories' => '',
     'price' => '',
     'image' => '',
-    'status' => 'active'
+    'status' => 'active',
+    'ai_metadata' => ''
 ];
 
 // Chế độ chỉnh sửa
@@ -83,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $calories = !empty($_POST['calories']) ? (int)$_POST['calories'] : null; 
     $price = (float)$_POST['price'];
     $status = $_POST['status'];
+    $ai_metadata = trim($_POST['ai_metadata']);
     $initial_quantity = isset($_POST['initial_quantity']) ? (int)$_POST['initial_quantity'] : 0;
     $min_quantity = isset($_POST['min_quantity']) ? (int)$_POST['min_quantity'] : 10;
 
@@ -113,10 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($edit_mode) {
             // Cập nhật sản phẩm
             $stmt = $pdo->prepare("UPDATE products 
-                SET name=?, category_id=?, description=?, ingredients=?, calories=?, price=?, image=?, status=? 
+                SET name=?, category_id=?, description=?, ingredients=?, calories=?, price=?, image=?, status=?, ai_metadata=? 
                 WHERE id=?");
             $stmt->execute([
-                $name, $category_id, $description, $ingredients, $calories, $price, $image, $status, $_GET['id']
+                $name, $category_id, $description, $ingredients, $calories, $price, $image, $status, $ai_metadata, $_GET['id']
             ]);
             $_SESSION['success'] = "Đã cập nhật sản phẩm thành công!";
         } else {
@@ -149,10 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 // Thêm sản phẩm mới
                 $stmt = $pdo->prepare("INSERT INTO products 
-                    (name, category_id, description, ingredients, calories, price, image, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    (name, category_id, description, ingredients, calories, price, image, status, ai_metadata) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([
-                    $name, $category_id, $description, $ingredients, $calories, $price, $image, $status
+                    $name, $category_id, $description, $ingredients, $calories, $price, $image, $status, $ai_metadata
                 ]);
                 $product_id = $pdo->lastInsertId();
                 
@@ -341,8 +343,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         <div class="form-section">
                             <h5 class="form-section-title">
-                                <i class="fas fa-cog me-2"></i>Cài đặt
+                                <i class="fas fa-robot me-2"></i>AI Metadata
                             </h5>
+                            
+                            <div class="mb-3">
+                                <label for="product_ai_metadata" class="form-label">AI Metadata</label>
+                                <textarea name="ai_metadata" id="product_ai_metadata" class="form-control" rows="4" 
+                                    placeholder="Thông tin cho AI tìm kiếm và chatbot (tự động tạo nếu để trống)"><?php echo htmlspecialchars($product['ai_metadata'] ?? ''); ?></textarea>
+                                <small class="text-muted">Thông tin này giúp AI hiểu rõ hơn về sản phẩm. Nếu để trống, hệ thống sẽ tự động tạo dựa trên tên, danh mục, mô tả và thành phần.</small>
+                            </div>
+                        </div>
                             
                             <div class="mb-3">
                                 <label class="form-label">Trạng thái</label>

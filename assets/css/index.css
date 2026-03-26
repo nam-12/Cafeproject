@@ -118,6 +118,14 @@ h5 {
     position: relative;
 }
 
+/* AI dropdown từ cùng ô tìm kiếm */
+.ai-results-dropdown {
+    top: calc(100% + 10px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1055;
+}
+
 .search-input-premium {
     width: 100%;
     padding: 1.5rem 2rem;
@@ -613,6 +621,34 @@ h5 {
 .info-item .value {
     color: var(--coffee-dark);
     font-weight: 500;
+}
+
+/* Giao diện AI Assistant trên Index */
+.ai-assistant-premium {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(245, 230, 211, 0.3));
+    padding: 3rem 0 4rem;
+}
+.ai-assistant-premium h2 {
+    color: var(--coffee-dark);
+    font-size: 2.4rem;
+    margin-bottom: 0.5rem;
+}
+.ai-assistant-premium p {
+    color: var(--coffee-medium);
+    margin-bottom: 1.4rem;
+    font-weight: 500;
+}
+.ai-search-wrapper .form-control {
+    border: 2px solid var(--gold);
+    border-radius: 40px;
+    padding: 0.95rem 1.2rem;
+    box-shadow: var(--shadow-sm);
+    font-size: 1rem;
+}
+.ai-search-wrapper .form-control:focus {
+    border-color: var(--coffee-dark);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+    outline: none;
 }
 
 /* Hiệu ứng mượt mà khi mở modal */

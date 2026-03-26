@@ -20,7 +20,7 @@ function getArrayValue($array, $key, $default = '') {
 }
 
 // Thêm sản phẩm vào giỏ hàng
-function addToCart($productId, $quantity = 1) {
+function addToCart($productId, $quantity = 1,$note = '') {
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
