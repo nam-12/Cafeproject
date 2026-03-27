@@ -680,9 +680,6 @@ END$$
 
 DELIMITER ;
 
--- ============================================
--- VIEWS
--- ============================================
 
 CREATE VIEW low_stock_products AS
 SELECT 
@@ -786,10 +783,7 @@ FROM products p
 LEFT JOIN categories c ON p.category_id = c.id
 WHERE p.is_featured = 1 AND p.status = 'active'
 ORDER BY p.created_at DESC;
--- ============================================================
--- migration_ai_v2.sql
--- Tối ưu cho dự án Cafe & Gemini API
--- ============================================================
+
 
 -- 1. Bảng lưu lịch sử hội thoại (Tăng cường hiệu năng bằng Index)
 CREATE TABLE IF NOT EXISTS `chat_history` (
@@ -851,11 +845,6 @@ SET p.ai_metadata = CONCAT(
     'Giá: ', FORMAT(p.price, 0), ' VNĐ. ',
     'Thành phần: ', IFNULL(p.ingredients, 'Tự nhiên')
 );
--- ================================================================
--- migration_shipping_upgrade.sql
--- Chạy 1 lần trong phpMyAdmin > tab SQL
--- ================================================================
-
 -- Bảng cache kết quả tính khoảng cách (tránh gọi API lặp lại)
 CREATE TABLE IF NOT EXISTS `shipping_distance_cache` (
     `id`           INT(11)      NOT NULL AUTO_INCREMENT,
