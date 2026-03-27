@@ -70,15 +70,17 @@
             card.className  = 'ai-product-card';
             card.dataset.id = p.id;
 
-            const imgSrc = p.image
-                ? `../assets/images/products/${escHtml(p.image)}`
-                : '../assets/images/products/default.jpg';
+            // Chuẩn hóa đường dẫn ảnh: mặc định là admin uploads (trên hệ thống hiện tại)
+            const imageName = (p.image || '').replace(/^\/?uploads\//i, '');
+            const imgSrc = imageName
+                ? `../admin/uploads/${encodeURIComponent(imageName)}`
+                : '../assets/images/no-image.jpg';
 
             card.innerHTML = `
                 <img src="${imgSrc}"
                      alt="${escHtml(p.name)}"
                      class="ai-product-img"
-                     onerror="this.src='../assets/images/products/default.jpg'">
+                     onerror="this.src='../assets/images/no-image.jpg'">
                 <div class="ai-product-info">
                     <div class="ai-product-name">${escHtml(p.name)}</div>
                     <div class="ai-product-price">
@@ -95,7 +97,11 @@
 
             card.addEventListener('click', () => {
                 logClick(p.id);
-                window.location.href = 'product_detail.php?id=' + p.id;
+                if (typeof showProductDetail === 'function') {
+                    showProductDetail(p.id);
+                } else {
+                    window.location.href = 'product_detail.php?id=' + p.id;
+                }
             });
 
             results.appendChild(card);
@@ -120,7 +126,7 @@
         results.innerHTML = `
             <div class="ai-loading">
                 <div class="ai-spinner"></div>
-                Đang tìm kiếm thông minh...
+                Đang tìm kiếm...
             </div>`;
 
         if (badge) badge.style.display = 'none';

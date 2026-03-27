@@ -341,29 +341,45 @@ const products = <?= $productsJson ?>;
 const initialDisplay = <?= $initialDisplay ?>;
 
 // Product detail modal
-function showProductDetail(productId) {
-    const product = products.find(p => p.id == productId);
-    if (!product) return;
-    
-    // Xử lý ảnh
-    const imgSrc = product.image 
-        ? 'admin/uploads/' + product.image.replace(/^(uploads\/|\/)/, '') 
+async function showProductDetail(productId) {
+    let product = products.find(p => p.id == productId);
+
+    if (!product) {
+        try {
+            const response = await fetch(`customer/get_product.php?id=${productId}`);
+            if (response.ok) {
+                product = await response.json();
+            }
+        } catch (err) {
+            console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
+        }
+    }
+
+    if (!product) {
+        alert('Không tìm thấy sản phẩm. Vui lòng thử lại.');
+        return;
+    }
+
+    populateProductModal(product);
+}
+
+function populateProductModal(product) {
+    const imgSrc = product.image
+        ? 'admin/uploads/' + product.image.replace(/^(uploads\/|\/)/, '')
         : 'https://via.placeholder.com/400x300?text=Coffee+House';
-    
+
     document.getElementById('detailImage').src = imgSrc;
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailCategory').textContent = product.category_name || 'Cà phê';
-    
-    // Logic hiển thị giá trong Modal
+
     const priceContainer = document.getElementById('detailPrice');
     const now = new Date();
     const startDate = product.discount_start_date ? new Date(product.discount_start_date) : null;
     const endDate = product.discount_end_date ? new Date(product.discount_end_date) : null;
-    
     const isPromoActive = product.discount_type !== 'none' && 
                           (!startDate || now >= startDate) && 
                           (!endDate || now <= endDate);
-    
+
     if (isPromoActive && product.sale_price && Number(product.sale_price) < Number(product.price)) {
         priceContainer.innerHTML = `
             <span class="text-decoration-line-through text-muted small" style="font-size: 0.7em;">${Number(product.price).toLocaleString('vi-VN')} ₫</span>
@@ -376,8 +392,7 @@ function showProductDetail(productId) {
     document.getElementById('detailIngredients').textContent = product.ingredients || 'Hạt cà phê nguyên chất';
     document.getElementById('detailCalories').textContent = product.calories || '150';
     document.getElementById('detailDescription').textContent = product.description || '';
-    
-    // Hiện Modal
+
     const modalEl = document.getElementById('productDetailModal');
     const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
     bsModal.show();
@@ -425,5 +440,7 @@ if (toggleBtn) {
 </script>
 
 <script src="./assets/js/home.js"></script>
+
+<?php include 'customer/chatbot_widget.php'; ?>
 </body>
 </html>

@@ -828,8 +828,8 @@ CREATE TABLE IF NOT EXISTS `ai_settings` (
 
 -- Chèn cấu hình Gemini mới nhất
 INSERT IGNORE INTO `ai_settings` (`setting_key`, `setting_value`, `description`) VALUES
-    ('gemini_api_key',   'AIzaSy...', 'API Key từ Google AI Studio'),
-    ('gemini_model',     'gemini-1.5-flash', 'Model mặc định: flash (nhanh) hoặc pro (thông minh)'),
+    ('gemini_api_key',   'AIzaSyAGm4fIfeI0Iq8jU2PQ_oexw25hDnx4i-Y', 'API Key từ Google AI Studio'),
+    ('gemini_model',     'gemini-2.5-flash', 'Model mặc định: flash (nhanh) hoặc pro (thông minh)'),
     ('ai_bot_status',    '1', '0: Tắt, 1: Bật'),
     ('ai_temperature',   '0.7', 'Độ sáng tạo của AI (0.1 - 1.0)');
 

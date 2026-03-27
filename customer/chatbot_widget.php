@@ -75,4 +75,5 @@
 </div>
 
 <link rel="stylesheet" href="../assets/css/ai_components.css">
+
 <script src="../assets/js/chatbot.js"></script>

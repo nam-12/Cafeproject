@@ -46,7 +46,7 @@
     border-bottom: 1px solid #f3f4f6;
 }
 .ai-product-card:last-child { border-bottom: none; }
-.ai-product-card:hover      { background: #f0f9ff; }
+.ai-product-card:hover { background: #f5e6d3; }
 
 .ai-product-img {
     width: 56px;
@@ -69,7 +69,7 @@
 }
 
 .ai-product-price {
-    color: #2563eb;
+    color: #6D4C41;;
     font-weight: 700;
     font-size: .85rem;
     margin-top: 2px;
@@ -88,7 +88,7 @@
 .ai-loading {
     padding: 24px;
     text-align: center;
-    color: #6b7280;
+    color: #eaeff7;
     font-size: .88rem;
 }
 
@@ -97,7 +97,7 @@
     width: 20px;
     height: 20px;
     border: 2px solid #e5e7eb;
-    border-top-color: #6366f1;
+    border-top-color:#6D4C41;
     border-radius: 50%;
     animation: spin .6s linear infinite;
     margin-right: 8px;
@@ -136,7 +136,8 @@
     width: 58px;
     height: 58px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #5D4037, #3E2723);
+    box-shadow: 0 6px 24px rgba(62, 39, 35, .45);
     color: #fff;
     border: none;
     font-size: 1.4rem;
@@ -150,12 +151,11 @@
 }
 
 .chatbot-toggle-btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, .55);
+    box-shadow: 0 8px 32px rgba(62, 39, 35, .55);
 }
 
 .chatbot-toggle-btn.active {
-    background: linear-gradient(135deg, #dc2626, #ef4444);
+    background: linear-gradient(135deg, #8D6E63, #5D4037);
 }
 
 /* Badge số tin nhắn chưa đọc */
@@ -218,7 +218,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+   background: linear-gradient(135deg, #3E2723, #2D1B00);
     color: #fff;
     flex-shrink: 0;
 }
@@ -301,9 +301,9 @@
 }
 
 .chat-message.user .chat-bubble {
-    background: #6366f1;
-    color: #fff;
+    background: #5D4037;
     border-bottom-right-radius: 4px;
+    color: #fff;
 }
 
 .chat-message.assistant .chat-bubble {
@@ -367,9 +367,9 @@
 }
 
 .suggestion-chip {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #2563eb;
+     background: #8D6E63;
+    border: 1px solid #6D4C41;
+    color: #fff;
     border-radius: 999px;
     padding: 4px 12px;
     font-size: .78rem;
@@ -378,7 +378,7 @@
     white-space: nowrap;
 }
 .suggestion-chip:hover {
-    background: #dbeafe;
+     background: #6D4C41;
     transform: scale(1.03);
 }
 
@@ -402,13 +402,13 @@
     transition: border-color .2s;
     background: #fff;
 }
-.chatbot-input-area input:focus  { border-color: #6366f1; }
+.chatbot-input-area input:focus  {  border-color: #6D4C41;}
 
 .chatbot-input-area button {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: #6366f1;
+    background: #5D4037;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -418,8 +418,8 @@
     justify-content: center;
     flex-shrink: 0;
 }
-.chatbot-input-area button:hover    { background: #4f46e5; transform: scale(1.05); }
-.chatbot-input-area button:disabled { background: #c4b5fd; cursor: not-allowed; transform: none; }
+.chatbot-input-area button:hover    { background: #3E2723; transform: scale(1.05); }
+.chatbot-input-area button:disabled {  background: #bcaaa4; cursor: not-allowed; transform: none; }
 
 /* Animations chung */
 @keyframes spin { to { transform: rotate(360deg); } }

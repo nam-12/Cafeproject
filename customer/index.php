@@ -103,7 +103,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
             <div class="search-container-premium">
                 <form id="searchForm" onsubmit="handleProductFilter(event)">
                     <input type="text" id="searchInput" class="search-input-premium"
-                        placeholder="Tìm kiếm sản phẩm (AI + tiêu chuẩn)..."
+                        placeholder="Tìm kiếm sản phẩm ..."
                         value="<?php echo htmlspecialchars($search); ?>">
                     <button type="submit" class="search-btn-premium">
                         <i class="fas fa-search me-2"></i>Tìm kiếm
@@ -300,10 +300,25 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
         const INITIAL_SEARCH = '<?php echo addslashes($search); ?>';
         const INITIAL_CATEGORY_ID = '<?php echo addslashes($category_filter); ?>';
 
-        function showProductDetail(productId) {
+        async function showProductDetail(productId) {
             // Tìm sản phẩm trong mảng currentProducts (mảng này sẽ được AJAX cập nhật ở fetch_products.php)
-            const product = currentProducts.find(p => p.id == productId);
-            if (!product) return;
+            let product = currentProducts.find(p => p.id == productId);
+
+            if (!product) {
+                try {
+                    const response = await fetch(`get_product.php?id=${productId}`);
+                    if (response.ok) {
+                        product = await response.json();
+                    }
+                } catch (err) {
+                    console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
+                }
+            }
+
+            if (!product) {
+                alert('Không tìm thấy sản phẩm. Vui lòng thử lại.');
+                return;
+            }
 
             // Xử lý ảnh
             let imageName = (product.image || '').replace('uploads/', '').replace('/uploads/', '');
