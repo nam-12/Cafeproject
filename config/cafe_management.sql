@@ -828,7 +828,7 @@ CREATE TABLE IF NOT EXISTS `ai_settings` (
 
 -- Chèn cấu hình Gemini mới nhất
 INSERT IGNORE INTO `ai_settings` (`setting_key`, `setting_value`, `description`) VALUES
-    ('gemini_api_key',   'AIzaS...', 'API Key từ Google AI Studio'),
+    ('gemini_api_key',   'AIza...', 'API Key từ Google AI Studio'),
     ('gemini_model',     'gemini-2.5-flash', 'Model mặc định: flash (nhanh) hoặc pro (thông minh)'),
     ('ai_bot_status',    '1', '0: Tắt, 1: Bật'),
     ('ai_temperature',   '0.7', 'Độ sáng tạo của AI (0.1 - 1.0)');
@@ -851,6 +851,36 @@ SET p.ai_metadata = CONCAT(
     'Giá: ', FORMAT(p.price, 0), ' VNĐ. ',
     'Thành phần: ', IFNULL(p.ingredients, 'Tự nhiên')
 );
+-- ================================================================
+-- migration_shipping_upgrade.sql
+-- Chạy 1 lần trong phpMyAdmin > tab SQL
+-- ================================================================
+
+-- Bảng cache kết quả tính khoảng cách (tránh gọi API lặp lại)
+CREATE TABLE IF NOT EXISTS `shipping_distance_cache` (
+    `id`           INT(11)      NOT NULL AUTO_INCREMENT,
+    `address_hash` CHAR(32)     NOT NULL COMMENT 'md5(lowercase address)',
+    `address_text` VARCHAR(300) NOT NULL COMMENT 'Địa chỉ gốc',
+    `km`           FLOAT        NOT NULL COMMENT 'Khoảng cách km',
+    `method`       VARCHAR(50)  NOT NULL COMMENT 'Provider đã dùng',
+    `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_address_hash` (`address_hash`),
+    INDEX `idx_created`         (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Cache khoảng cách giao hàng';
+
+-- Thêm cột distance vào bảng orders (nếu chưa có)
+ALTER TABLE `orders`
+    ADD COLUMN IF NOT EXISTS `distance`     FLOAT   DEFAULT NULL COMMENT 'Khoảng cách km từ quán đến KH',
+   
+    ADD COLUMN IF NOT EXISTS `distance_method` VARCHAR(50) DEFAULT NULL COMMENT 'Provider tính khoảng cách';
+
+-- Tự động xóa cache cũ hơn 7 ngày (chạy định kỳ hoặc thêm vào cron)
+-- DELETE FROM shipping_distance_cache WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY);
+
+-- Kiểm tra kết quả
+DESCRIBE shipping_distance_cache;
+DESCRIBE orders;
 -- ============================================
 -- EVENT SCHEDULER
 -- ============================================

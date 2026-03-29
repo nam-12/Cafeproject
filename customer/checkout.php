@@ -473,10 +473,19 @@ $navbar_type = 'checkout';
                     });
 
                     if (!res.ok) {
+                        const text = await res.text();
+                        console.error('[Shipping API Non-OK]', res.status, text);
                         throw new Error(`HTTP ${res.status}`);
                     }
 
-                    const data = await res.json();
+                    const text = await res.text();
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (parseErr) {
+                        console.error('[Shipping API Invalid JSON]', text);
+                        throw new Error('Invalid JSON response from Shipping API');
+                    }
 
                     if (!data.ok) {
                         addrError.textContent = data.msg || 'Không tính được phí ship';
@@ -663,6 +672,9 @@ $navbar_type = 'checkout';
             });
         })();
     </script>
+    <link rel="stylesheet" href="../assets/css/shipping_v2.css">
+<script src="../assets/js/shipping_v2.js"></script>
+
 </body>
 
 </html>

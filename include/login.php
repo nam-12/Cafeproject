@@ -23,50 +23,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    if ($user && password_verify($password, $user['password'])) {
-        // Kiểm tra nếu tài khoản bị vô hiệu hóa
-        if (!$user['is_active']) {
-            $error = "Tài khoản của bạn đã bị vô hiệu hóa!";
-        } else {
-            // Lưu thông tin session
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['role'] = $user['role'];
-            
-            // Lưu permissions của user vào session
-            $_SESSION['permissions'] = getUserPermissions($user['id']);
-            $_SESSION['roles'] = getUserRoles($user['id']);
-            
-            // Ghi nhật ký đăng nhập
-            logActivity('login', 'auth', 'Đăng nhập thành công');
-
-            // Nếu người dùng chọn "Ghi nhớ đăng nhập"
-            if ($remember) {
-                // Tạo token an toàn
-                $token = bin2hex(random_bytes(16));
-                $expiry = date('Y-m-d H:i:s', strtotime('+30 days'));
-                
-                // Lưu token vào database
-                $stmt = $pdo->prepare("UPDATE users SET remember_token = ?, token_expiry = ? WHERE id = ?");
-                $stmt->execute([$token, $expiry, $user['id']]);
-                
-                // Đặt cookie
-                setcookie('remember_token', $token, time() + (86400 * 30), "/", "", true, true);
-            }
-
-            // Redirect theo role
-            if ($user['role'] === 'admin' || $user['role'] === 'staff') {
-                header('Location: ../admin/index.php');
+    if ($user) {
+        if (password_verify($password, $user['password'])) {
+            // Kiểm tra nếu tài khoản bị vô hiệu hóa
+            if (!$user['is_active']) {
+                $error = "Tài khoản của bạn đã bị vô hiệu hóa!";
             } else {
-                header('Location: ../customer/index.php');
+                // Lưu thông tin session
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['full_name'] = $user['full_name'];
+                $_SESSION['role'] = $user['role'];
+                
+                // Lưu permissions của user vào session
+                $_SESSION['permissions'] = getUserPermissions($user['id']);
+                $_SESSION['roles'] = getUserRoles($user['id']);
+                
+                // Ghi nhật ký đăng nhập
+                logActivity('login', 'auth', 'Đăng nhập thành công');
+
+                // Nếu người dùng chọn "Ghi nhớ đăng nhập"
+                if ($remember) {
+                    // Tạo token an toàn
+                    $token = bin2hex(random_bytes(16));
+                    $expiry = date('Y-m-d H:i:s', strtotime('+30 days'));
+                    
+                    // Lưu token vào database
+                    $stmt = $pdo->prepare("UPDATE users SET remember_token = ?, token_expiry = ? WHERE id = ?");
+                    $stmt->execute([$token, $expiry, $user['id']]);
+                    
+                    // Đặt cookie
+                    setcookie('remember_token', $token, time() + (86400 * 30), "/", "", true, true);
+                }
+
+                // Redirect theo role
+                if ($user['role'] === 'admin' || $user['role'] === 'staff') {
+                    header('Location: ../admin/index.php');
+                } else {
+                    header('Location: ../customer/index.php');
+                }
+                exit;
             }
-            exit;
+        } else {
+            $error = "Tên đăng nhập hoặc mật khẩu không đúng!";
+            // Ghi nhật ký đăng nhập thất bại
+            logActivity('login_failed', 'auth', "Cố gắng đăng nhập với username: $username - Mật khẩu sai");
         }
     } else {
-        $error = "Tên đăng nhập hoặc mật khẩu không đúng!";
+        $error = "Tài khoản không tồn tại!";
         // Ghi nhật ký đăng nhập thất bại
-        logActivity('login_failed', 'auth', "Cố gắng đăng nhập với username: $username");
+        logActivity('login_failed', 'auth', "Cố gắng đăng nhập với username không tồn tại: $username");
     }
 }
 ?>

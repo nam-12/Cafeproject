@@ -19,6 +19,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'check') {
     
     $name = isset($_GET['name']) ? trim($_GET['name']) : '';
     $category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+    $excludeId = isset($_GET['exclude_id']) ? (int)$_GET['exclude_id'] : 0;
     
     if (empty($name)) {
         echo json_encode(['exists' => false]);
@@ -32,6 +33,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'check') {
         if ($category > 0) {
             $sql .= " AND category_id = ?";
             $params[] = $category;
+        }
+        
+        if ($excludeId > 0) {
+            $sql .= " AND id != ?";
+            $params[] = $excludeId;
         }
         
         $stmt = $pdo->prepare($sql);
@@ -113,6 +119,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     try {
         if ($edit_mode) {
+            // Kiểm tra tên sản phẩm trùng khi chỉnh sửa (không tính chính bản thân nó)
+            $stmtCheck = $pdo->prepare("SELECT id FROM products WHERE LOWER(name) = LOWER(?) AND category_id = ? AND id != ?");
+            $stmtCheck->execute([$name, $category_id, $_GET['id']]);
+            $duplicate = $stmtCheck->fetch();
+
+            if ($duplicate) {
+                $_SESSION['error'] = "Tên sản phẩm đã tồn tại";
+                header('Location: product_form.php?id=' . urlencode($_GET['id']));
+                exit;
+            }
+
             // Cập nhật sản phẩm
             $stmt = $pdo->prepare("UPDATE products 
                 SET name=?, category_id=?, description=?, ingredients=?, calories=?, price=?, image=?, status=?, ai_metadata=? 
@@ -250,10 +267,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div class="form-row">
                                 <div class="form-col">
                                     <label for="product_name" class="form-label required-field">Tên sản phẩm</label>
+                                    <input type="hidden" id="current_product_id" value="<?php echo $edit_mode ? intval($_GET['id']) : ''; ?>">
                                     <input type="text" name="name" id="product_name" class="form-control" 
                                         value="<?php echo htmlspecialchars($product['name'] ?? ''); ?>" required>
                                     <div id="name_warning" class="warning-message">
-                                        <i class="fas fa-exclamation-triangle"></i> Sản phẩm này có thể đã tồn tại. Nếu thêm, số lượng sẽ được cộng dồn.
+                                        <i class="fas fa-exclamation-triangle"></i> Sản phẩm đã tồn tại.
                                     </div>
                                 </div>
                                 <div class="form-col">
@@ -407,10 +425,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
 
-        <?php if (!$edit_mode): ?>
         let checkTimeout;
         const productNameInput = document.getElementById('product_name');
         const productCategorySelect = document.getElementById('product_category');
+        const currentProductId = document.getElementById('current_product_id')?.value || '';
 
         if (productNameInput) {
             productNameInput.addEventListener('input', checkProductExists);
@@ -424,14 +442,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             clearTimeout(checkTimeout);
             const name = productNameInput.value.trim();
             const categoryId = productCategorySelect.value;
-            
+
             if (name.length < 2) {
                 document.getElementById('name_warning').style.display = 'none';
                 return;
             }
-            
+
             checkTimeout = setTimeout(() => {
-                fetch('?ajax=check&name=' + encodeURIComponent(name) + '&category=' + categoryId)
+                let url = '?ajax=check&name=' + encodeURIComponent(name) + '&category=' + categoryId;
+                if (currentProductId) {
+                    url += '&exclude_id=' + encodeURIComponent(currentProductId);
+                }
+
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         if (data.exists) {
@@ -443,16 +466,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     .catch(error => console.error('Error:', error));
             }, 500);
         }
-        <?php endif; ?>
 
-        // Tự động ẩn thông báo sau 3 giây
+        const productForm = document.getElementById('productForm');
+        if (productForm) {
+            productForm.addEventListener('submit', function (e) {
+                const warningMessage = document.getElementById('name_warning');
+                if (warningMessage && warningMessage.style.display === 'block') {
+                    e.preventDefault();
+                    warningMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+
+        // Tự động ẩn thông báo sau 2 giây
         setTimeout(() => {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
             });
-        }, 3000);
+        }, 2000);
     </script>
 </body>
 </html>

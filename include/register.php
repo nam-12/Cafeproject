@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // 2. Insert user (Thêm email vào câu lệnh INSERT)
                 $stmt = $pdo->prepare("INSERT INTO users (username, full_name, email, password) VALUES (?, ?, ?, ?)");
                 if ($stmt->execute([$username, $full_name, $email, $hashed_password])) {
-                    $success = "Đăng ký thành công! Bạn có thể <a href='login.php'>đăng nhập</a> ngay.";
+                    $success = "Đăng ký thành công! ";
                 } else {
                     $error = "Đã có lỗi xảy ra, vui lòng thử lại!";
                 }
@@ -100,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="alert alert-success" role="alert">
                     <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
                 </div>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = 'login.php';
+                    }, 1000);
+                </script>
             <?php endif; ?>
 
             <form method="POST" id="registerForm">

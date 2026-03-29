@@ -48,10 +48,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $discount_end_date = !empty($_POST['discount_end_date']) ? $_POST['discount_end_date'] : null;
         $is_featured = isset($_POST['is_featured']) ? 1 : 0;
 
+        // ===== VALIDATION =====
+        // Kiểm tra discount_type hợp lệ
+        $valid_types = ['none', 'percentage', 'fixed'];
+        if (!in_array($discount_type, $valid_types)) {
+            throw new Exception("Loại giảm giá không hợp lệ!");
+        }
+
+        // Kiểm tra discount_value khi loại không phải 'none'
+        if ($discount_type !== 'none') {
+            if ($discount_type === 'percentage') {
+                if ($discount_value <= 0 || $discount_value > 100) {
+                    throw new Exception("Giá trị giảm theo phần trăm phải từ 0-100%!");
+                }
+            } elseif ($discount_type === 'fixed') {
+                if ($discount_value <= 0) {
+                    throw new Exception("Giá trị giảm cố định phải lớn hơn 0!");
+                }
+            }
+        }
+
+        // Kiểm tra thời gian giảm giá hợp lệ
+        if ($discount_start_date && $discount_end_date) {
+            try {
+                $startDate = new DateTime($discount_start_date);
+                $endDate = new DateTime($discount_end_date);
+                
+                if ($startDate >= $endDate) {
+                    throw new Exception("Ngày bắt đầu phải trước ngày kết thúc!");
+                }
+            } catch (Exception $e) {
+                throw new Exception("Định dạng ngày/giờ không hợp lệ!");
+            }
+        }
+
         // Get original price
         $stmt = $pdo->prepare("SELECT price FROM products WHERE id = ?");
         $stmt->execute([$product_id]);
         $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$product) {
+            throw new Exception("Không tìm thấy sản phẩm!");
+        }
 
         if ($product) {
             $original_price = $product['price'];
@@ -82,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             $_SESSION['success'] = "Thiết lập giảm giá thành công!";
         }
-    } catch (PDOException $e) {
-        $_SESSION['warning'] = "Lỗi: " . $e->getMessage();
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Lỗi: " . $e->getMessage();
     }
     header('Location: products.php');
     exit;
@@ -536,7 +574,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST" id="discountForm">
                     <input type="hidden" name="action" value="set_discount">
                     <input type="hidden" name="product_id" id="product_id">
 
@@ -606,7 +644,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                         <button type="submit" class="btn btn-primary btn-action">
-                            <i class="fas fa-save me-2"></i>Lưu thiết lập
+                            <i class="fas fa-save me-2"></i>Áp dụng
                         </button>
                     </div>
                 </form>
@@ -690,6 +728,123 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                 }, 500);
             });
         }, 2000);
+
+        // ===== VALIDATION DISCOUNT FORM =====
+        const discountForm = document.getElementById('discountForm');
+        if (discountForm) {
+            discountForm.addEventListener('submit', function(e) {
+                const errorMsg = validateDiscount();
+                if (errorMsg) {
+                    e.preventDefault();
+                    showDiscountError(errorMsg);
+                }
+            });
+        }
+
+        // Event listeners để hiển thị lỗi realtime
+        document.getElementById('discount_type').addEventListener('change', function() {
+            const errorDiv = document.getElementById('discount_error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+
+        document.getElementById('discount_value').addEventListener('input', function() {
+            const errorDiv = document.getElementById('discount_error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+
+        document.getElementById('discount_start_date').addEventListener('change', function() {
+            const errorDiv = document.getElementById('discount_error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+
+        document.getElementById('discount_end_date').addEventListener('change', function() {
+            const errorDiv = document.getElementById('discount_error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+
+        function validateDiscount() {
+            const discountType = document.getElementById('discount_type').value;
+            const discountValue = parseFloat(document.getElementById('discount_value').value);
+            const startDate = document.getElementById('discount_start_date').value;
+            const endDate = document.getElementById('discount_end_date').value;
+
+            // Kiểm tra discount_type
+            if (!['none', 'percentage', 'fixed'].includes(discountType)) {
+                return "Loại giảm giá không hợp lệ!";
+            }
+
+            // Kiểm tra discount_value khi loại không phải 'none'
+            if (discountType !== 'none') {
+                if (isNaN(discountValue) || discountValue === '') {
+                    return "Vui lòng nhập giá trị giảm!";
+                }
+
+                if (discountType === 'percentage') {
+                    if (discountValue <= 0 || discountValue > 100) {
+                        return "Giá trị giảm theo phần trăm phải từ 0-100%!";
+                    }
+                } else if (discountType === 'fixed') {
+                    if (discountValue <= 0) {
+                        return "Giá trị giảm cố định phải lớn hơn 0!";
+                    }
+                }
+            }
+
+            // Kiểm tra thời gian giảm giá
+            if (startDate && endDate) {
+                const startDateTime = new Date(startDate);
+                const endDateTime = new Date(endDate);
+
+                if (startDateTime >= endDateTime) {
+                    return "Ngày bắt đầu phải trước ngày kết thúc!";
+                }
+            }
+
+            return null; // không có lỗi
+        }
+
+        function showDiscountError(message) {
+            // Xóa lỗi cũ
+            const oldError = document.getElementById('discount_error');
+            if (oldError) {
+                oldError.remove();
+            }
+
+            // Tạo div lỗi mới
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'discount_error';
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show';
+            errorDiv.style.marginBottom = '15px';
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            // Chèn vào đầu modal-body
+            const modalBody = discountForm.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.insertBefore(errorDiv, modalBody.firstChild);
+                // Cuộn tới error
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Tự động ẩn error sau 2 giây
+                setTimeout(() => {
+                    if (errorDiv.parentElement) {
+                        const bsAlert = new bootstrap.Alert(errorDiv);
+                        bsAlert.close();
+                    }
+                }, 2000);
+            }
+        }
+
     </script>
 </body>
 

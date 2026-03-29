@@ -63,10 +63,11 @@ date_default_timezone_set(APP_TIMEZONE);
 
 // ===============================
 // ===== CẤU HÌNH GIAO HÀNG =====
-define('GOOGLE_MAPS_API_KEY', '');  // Dán API key vào đây, hoặc để '' dùng OpenStreetMap miễn phí
+define('GRAPH_HOPPER_API_KEY', 'cce29cb5-0d85-4d3d-898a-d52d380d7bf6');  // Dán API key GraphHopper vào đây
 define('STORE_ADDRESS', '41A Đ.Phú Diễn,Phú Diễn, Bắc Từ Liêm, Hà Nội'); // ← Thay bằng địa chỉ quán thật
 define('STORE_LAT', 21.047051);  // ← Thay bằng tọa độ latitude quán thật
-define('STORE_LNG', 105.762203); // ← Thay bằng tọa độ longitude quán thật (tra Google Maps)
+define('STORE_LNG', 105.762203); // ← Thay bằng tọa độ longitude quán thật
+
 // 10. HELPER
 // ===============================
 function getConfig(string $key, $default = null) {

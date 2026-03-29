@@ -1,0 +1,207 @@
+/* ================================================================
+   assets/css/shipping_v2.css
+   Style cho tính năng tính phí ship nâng cấp
+   ================================================================ */
+
+/* ── Wrapper địa chỉ ─────────────────────────────────────────── */
+.address-input-wrapper {
+    position: relative;
+}
+
+/* Input địa chỉ */
+#delivery_address {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: .95rem;
+    padding-right: 44px; /* chỗ cho nút vị trí */
+    transition: border-color .25s, box-shadow .25s;
+}
+#delivery_address:focus {
+    border-color: #a2836e;
+    box-shadow: 0 0 0 3px rgba(162,131,110,.15);
+    outline: none;
+}
+#delivery_address.is-valid-addr   { border-color: #28a745; }
+#delivery_address.is-invalid-addr { border-color: #dc3545; }
+
+/* Nút dùng vị trí hiện tại */
+#btn-use-location {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #a2836e;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color .2s, background .2s;
+    z-index: 2;
+}
+#btn-use-location:hover    { color: #7c5c47; background: rgba(162,131,110,.1); }
+#btn-use-location:disabled { color: #ccc; cursor: not-allowed; }
+#btn-use-location title    {content: attr(title);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #3E2723;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap; }
+
+/* ── Autocomplete dropdown ───────────────────────────────────── */
+#address-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.12);
+    z-index: 1040;
+    max-height: 220px;
+    overflow-y: auto;
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    animation: suggFade .12s ease;
+}
+
+@keyframes suggFade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.suggestion-item {
+    padding: 9px 14px;
+    font-size: .87rem;
+    color: #374151;
+    cursor: pointer;
+    border-bottom: 1px solid #f9fafb;
+    transition: background .12s;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+}
+.suggestion-item::before {
+    content: '\f3c5'; /* fa-map-marker-alt */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: #a2836e;
+    font-size: .75rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover,
+.suggestion-item.active     { background: #fdf8f5; color: #a2836e; }
+.suggestion-item strong     { color: #111; }
+
+/* ── Shipping info box ───────────────────────────────────────── */
+#shipping-box {
+    border: 1.5px solid #a2836e !important;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #fdfaf8, #fff8f4);
+    animation: boxReveal .2s ease;
+}
+
+@keyframes boxReveal {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+#shipping-box .card-body { padding: 12px 16px; }
+
+/* Dòng chính: km + phí */
+.ship-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#ship-km {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+#ship-fee {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #a2836e;
+}
+
+/* Dòng ghi chú */
+#ship-note {
+    font-size: .78rem;
+    color: #f59e0b;
+    margin-top: 3px;
+}
+
+/* Bảng phí chi tiết */
+#ship-breakdown {
+    font-size: .78rem;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* ── Badge provider ──────────────────────────────────────────── */
+#ship-method { margin-top: 6px; }
+
+.badge-provider {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .72rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: .01em;
+}
+
+.badge-provider.google {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.badge-provider.ors {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.badge-provider.osm {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+}
+
+/* ── Loading indicator ───────────────────────────────────────── */
+#shipping-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .82rem;
+    color: #9ca3af;
+    padding: 4px 0;
+}
+
+/* ── Cảnh báo submit ─────────────────────────────────────────── */
+#submit-addr-warning {
+    font-size: .82rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}

@@ -163,42 +163,66 @@ function getCartTotal() {
  * <= 5km  → 15,000đ
  * >  5km  → 20,000đ + 3,000đ/km vượt (làm tròn lên)
  */
-function calculateShippingFee(float $km): int {
-    if ($km <= 2) return 10000;
-    if ($km <= 5) return 15000;
-    return 20000 + (int)(ceil($km - 5) * 3000);
+if (!function_exists('calculateShippingFee')) {
+    function calculateShippingFee(float $km): int {
+        if ($km <= 2) return 10000;
+        if ($km <= 5) return 15000;
+        return 20000 + (int)(ceil($km - 5) * 3000);
+    }
 }
 
 /**
  * Lấy khoảng cách từ quán tới địa chỉ khách
- * Ưu tiên Google Maps API, fallback về OpenStreetMap
+ * Dùng GraphHopper geocoding + routing, fallback về OpenStreetMap khi cần
  */
 function getShippingDistance(string $customerAddress): array {
-    $apiKey = defined('GOOGLE_MAPS_API_KEY') ? GOOGLE_MAPS_API_KEY : '';
+    $apiKey = defined('GRAPH_HOPPER_API_KEY') ? GRAPH_HOPPER_API_KEY : '';
 
     if (!empty($apiKey)) {
-        return _getDistanceGoogleMaps($customerAddress, $apiKey);
+        return _getDistanceGraphHopper($customerAddress, $apiKey);
     }
     return _getDistanceOpenStreetMap($customerAddress);
 }
 
-function _getDistanceGoogleMaps(string $address, string $apiKey): array {
-    $origin      = urlencode(STORE_ADDRESS);
-    $destination = urlencode($address);
-    $url = "https://maps.googleapis.com/maps/api/distancematrix/json"
-         . "?origins={$origin}&destinations={$destination}&mode=driving&language=vi&key={$apiKey}";
+function _getDistanceGraphHopper(string $address, string $apiKey): array {
+    $encoded = urlencode($address . ', Việt Nam');
+    $urlGeo  = "https://graphhopper.com/api/1/geocode?q={$encoded}&locale=vi&countrycodes=VN&limit=1&key={$apiKey}";
+    $ctx     = stream_context_create(['http' => ['timeout' => 6]]);
+    $resp    = @file_get_contents($urlGeo, false, $ctx);
 
-    $ctx  = stream_context_create(['http' => ['timeout' => 6]]);
-    $resp = @file_get_contents($url, false, $ctx);
-    if (!$resp) return _fallbackDistance($address);
-
-    $data = json_decode($resp, true);
-    if (($data['status'] ?? '') !== 'OK'
-        || ($data['rows'][0]['elements'][0]['status'] ?? '') !== 'OK') {
-        return ['success' => false, 'km' => 3.0, 'error' => 'Địa chỉ không tìm thấy trên bản đồ'];
+    if (!$resp) {
+        return _getDistanceOpenStreetMap($address);
     }
 
-    $km = round($data['rows'][0]['elements'][0]['distance']['value'] / 1000, 2);
+    $data = json_decode($resp, true);
+    $hit  = $data['hits'][0] ?? null;
+    if (!$hit || empty($hit['point'])) {
+        return _getDistanceOpenStreetMap($address);
+    }
+
+    $custLat = $hit['point']['lat'];
+    $custLng = $hit['point']['lng'];
+
+    $storeLat = defined('STORE_LAT') ? STORE_LAT : 0;
+    $storeLng = defined('STORE_LNG') ? STORE_LNG : 0;
+
+    if (!$storeLat || !$storeLng) {
+        return ['success' => false, 'km' => 3.0, 'error' => 'STORE_LAT/STORE_LNG chưa cấu hình'];
+    }
+
+    $urlRoute = "https://graphhopper.com/api/1/route?point={$storeLat},{$storeLng}&point={$custLat},{$custLng}&vehicle=car&locale=vi&key={$apiKey}&points_encoded=false";
+    $resp2    = @file_get_contents($urlRoute, false, $ctx);
+    if (!$resp2) {
+        return _getDistanceOpenStreetMap($address);
+    }
+
+    $data2 = json_decode($resp2, true);
+    $dist  = $data2['paths'][0]['distance'] ?? null;
+    if ($dist === null) {
+        return _getDistanceOpenStreetMap($address);
+    }
+
+    $km = round($dist / 1000, 2);
     return ['success' => true, 'km' => $km, 'error' => ''];
 }
 
