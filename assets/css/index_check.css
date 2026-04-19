@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --coffee-dark: #2D1B00;
     --coffee-brown: #3E2723;
     --coffee-medium: #5D4037;
@@ -118,7 +118,7 @@ h5 {
     position: relative;
 }
 
-/* AI dropdown từ cùng ô tìm kiếm */
+/* AI dropdown tá»« cĂ¹ng Ă´ tĂ¬m kiáº¿m */
 .ai-results-dropdown {
     top: calc(100% + 10px) !important;
     left: 0 !important;
@@ -185,7 +185,7 @@ h5 {
     overflow-x: auto;
     padding: 1.5rem 0;
     justify-content: center;
-    flex-wrap: wrap; /* Cho phép xuống dòng nếu cần */
+    flex-wrap: wrap; /* Cho phĂ©p xuá»‘ng dĂ²ng náº¿u cáº§n */
     scrollbar-width: thin;
     scrollbar-color: var(--gold) var(--cream-dark);
 }
@@ -220,7 +220,7 @@ h5 {
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
-    flex-shrink: 0; /* Quan trọng: không bị bóp nhỏ khi flex-wrap */
+    flex-shrink: 0; /* Quan trá»ng: khĂ´ng bá»‹ bĂ³p nhá» khi flex-wrap */
 }
 
 .category-item-premium::before {
@@ -421,7 +421,7 @@ h5 {
     flex: 1;
 }
 
-/* Container chứa giá */
+/* Container chá»©a giĂ¡ */
 .product-price-premium {
     font-size: 1.45rem;
     font-weight: 700;
@@ -431,7 +431,7 @@ h5 {
     gap: 10px;
 }
 
-/* Style cho Giá Mới (Đang giảm hoặc giá gốc) */
+/* Style cho GiĂ¡ Má»›i (Äang giáº£m hoáº·c giĂ¡ gá»‘c) */
 .product-price-premium .price-new {
     background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%);
     -webkit-background-clip: text;
@@ -439,16 +439,16 @@ h5 {
     background-clip: text;
 }
 
-/* Style cho Giá Cũ (Bị gạch ngang) */
+/* Style cho GiĂ¡ CÅ© (Bá»‹ gáº¡ch ngang) */
 .product-price-premium .price-old {
     font-size: 1.05rem;
-    /* Nhỏ hơn giá mới */
+    /* Nhá» hÆ¡n giĂ¡ má»›i */
     color: #888888 !important;
-    /* Màu xám rõ ràng */
+    /* MĂ u xĂ¡m rĂµ rĂ ng */
     text-decoration: line-through;
-    /* Gạch ngang */
+    /* Gáº¡ch ngang */
     -webkit-text-fill-color: #888888 !important;
-    /* Ghi đè lại thuộc tính gradient nếu bị thừa hưởng */
+    /* Ghi Ä‘Ă¨ láº¡i thuá»™c tĂ­nh gradient náº¿u bá»‹ thá»«a hÆ°á»Ÿng */
     font-weight: 500;
     opacity: 0.8;
 }
@@ -630,7 +630,7 @@ h5 {
     font-weight: 500;
 }
 
-/* Giao diện AI Assistant trên Index */
+/* Giao diá»‡n AI Assistant trĂªn Index */
 .ai-assistant-premium {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(245, 230, 211, 0.3));
     padding: 3rem 0 4rem;
@@ -662,7 +662,7 @@ h5 {
     outline: none;
 }
 
-/* Hiệu ứng mượt mà khi mở modal */
+/* Hiá»‡u á»©ng mÆ°á»£t mĂ  khi má»Ÿ modal */
 .modal.fade .modal-dialog {
     transform: scale(0.8);
     transition: transform 0.3s ease-out;
@@ -670,146 +670,4 @@ h5 {
 
 .modal.show .modal-dialog {
     transform: scale(1);
-}
-
-/* =========================================
-   RESPONSIVE (MOBILE & TABLET FIXES)
-========================================= */
-
-@media (max-width: 991.98px) {
-    .navbar-brand-premium {
-        font-size: 1.4rem;
-        letter-spacing: 0px;
-    }
-
-    .hero-premium {
-        min-height: 450px;
-    }
-    .hero-content-premium h1 {
-        font-size: 3.5rem;
-    }
-    .section-title-premium h2 {
-        font-size: 2.8rem;
-    }
-    
-    /* Category scroll UX smooth app-like */
-    .category-scroll {
-        -webkit-overflow-scrolling: touch;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 767.98px) {
-    .hero-content-premium h1 {
-        font-size: 2.8rem;
-        letter-spacing: 2px;
-    }
-    .hero-content-premium p {
-        font-size: 1.1rem;
-        padding: 0 1rem;
-    }
-    
-    /* 1 Cột Search rõ ràng thay vì đè lên nhau */
-    .search-container-premium form {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-    .search-input-premium {
-        padding: 1.2rem 1.5rem;
-        border-radius: 12px;
-    }
-    .search-btn-premium {
-        position: static;
-        width: 100%;
-        transform: none;
-        padding: 1.2rem;
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .search-btn-premium:hover {
-        transform: translateY(-2px);
-    }
-    
-    /* Responsive Danh mục - Ưu tiên scroll trên mobile nhỏ */
-    .category-scroll::-webkit-scrollbar {
-        display: none;
-    }
-    .category-scroll {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-        padding: 1rem 0;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-    }
-    .category-item-premium {
-        padding: 0.8rem 1.5rem;
-        font-size: 0.85rem;
-    }
-
-    /* Thu hẹp H2 để khỏi lấn viền */
-    .section-title-premium {
-        margin-bottom: 2.5rem;
-    }
-    .section-title-premium h2 {
-        font-size: 2.2rem;
-    }
-    
-    .products-premium {
-        padding: 2.5rem 0;
-    }
-    
-    .product-card-premium {
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .hero-content-premium h1 {
-        font-size: 2.2rem;
-    }
-    .hero-content-premium p {
-        font-size: 0.95rem;
-    }
-    .hero-premium {
-        min-height: 380px;
-    }
-    
-    .section-title-premium h2 {
-        font-size: 1.8rem;
-    }
-    
-    .product-title-premium {
-        font-size: 1.4rem;
-    }
-    
-    .product-price-premium {
-        font-size: 1.3rem;
-    }
-    
-    .btn-add-cart-premium {
-        padding: 0.85rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    /* Tối ưu Modal trên mobile */
-    .product-modal-premium {
-        border-radius: 16px !important;
-    }
-    .modal-image-container {
-        min-height: 250px;
-    }
-    
-    .empty-state-premium {
-        padding: 3rem 1rem;
-    }
-    .empty-state-premium i {
-        font-size: 4rem;
-    }
-    .empty-state-premium h3 {
-        font-size: 1.5rem;
-    }
 }

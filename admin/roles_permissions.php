@@ -220,9 +220,14 @@ $module_names = [
         <div class="flex-grow-1">
             <!-- Header -->
             <div class="header d-flex justify-content-between align-items-center p-4 bg-light border-bottom">
-                <h2 class="m-0">
-                    <i class="fas fa-shield-alt me-2"></i>Quản lý Roles & Permissions
-                </h2>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="m-0">
+                        <i class="fas fa-shield-alt me-2"></i>Quản lý Roles & Permissions
+                    </h2>
+                </div>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
                     <i class="fas fa-plus me-2"></i>Thêm Vai Trò
                 </button>

@@ -440,7 +440,5 @@ if (toggleBtn) {
 </script>
 
 <script src="./assets/js/home.js"></script>
-
-<?php include 'customer/chatbot_widget.php'; ?>
 </body>
 </html>

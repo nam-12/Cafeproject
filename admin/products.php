@@ -259,9 +259,14 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
         <?php include 'sidebar.php'; ?>
 
         <main class="main-content">
-            <div class="page-header">
-                <div>
-                    <h1><i class="fas fa-mug-hot me-2"></i>Quản lý sản phẩm</h1>
+            <div class="page-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1><i class="fas fa-mug-hot me-2"></i>Quản lý sản phẩm</h1>
+                    </div>
                 </div>
                 <?php if (hasPermission('create_product')): ?>
                 <a href="product_form.php" class="btn btn-primary btn-action">

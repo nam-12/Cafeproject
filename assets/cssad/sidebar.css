@@ -19,6 +19,7 @@
     color: #fff;
     position: sticky;
     top: 0;
+    align-self: flex-start;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -27,6 +28,24 @@
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
     border-right: 1px solid rgba(212, 175, 55, 0.15);
     width: var(--sidebar-expanded);
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 0.6rem;
+    padding: 0.45rem 0.7rem;
+}
+
+@media (max-width: 991.98px) {
+    .mobile-menu-btn {
+        display: inline-flex !important;
+    }
 }
 
 /* ======================
@@ -111,6 +130,14 @@
     }
 }
 
+/* Force sidebar content visible in mobile even when bootstrap collapse class is present */
+.sidebar-menu.collapse {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    visibility: visible !important;
+}
+
 /* ======================
    DESKTOP - COLLAPSED STATE
 ====================== */
@@ -128,23 +155,56 @@
 ====================== */
 @media (max-width: 991.98px) {
     .sidebar-wrapper {
-        width: 100%;
-        height: auto;
-        max-width: 100%;
-        flex: 0 0 auto;
+        width: min(var(--sidebar-expanded), 90vw) !important;
+        height: 100vh !important;
+        max-width: min(var(--sidebar-expanded), 90vw) !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 1001 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: var(--shadow-xl) !important;
+    }
+
+    .sidebar-wrapper.show {
+        transform: translateX(0) !important;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
     }
 
     .sidebar-menu {
-        max-height: 65vh;
+        max-height: 70vh;
         padding: 1.5rem 1rem;
     }
 
     .brand-box {
-        display: none;
+        display: block !important;
+        padding: 1.5rem 1rem;
     }
 
     .sidebar-menu:not(.collapse) {
         display: block !important;
+    }
+
+    /* Ẩn footer trên mobile khi không cần thiết */
+    .sidebar-footer {
+        display: none;
     }
 }
 

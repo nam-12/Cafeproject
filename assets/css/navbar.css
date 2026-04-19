@@ -43,6 +43,7 @@
     letter-spacing: 1.5px;
     transition: var(--transition);
     text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    white-space: nowrap;
 }
 
 /* Logged-in brand */
@@ -156,5 +157,112 @@
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+/* =========================================
+   TABLET TRUNG GIAN (992px - 1280px):
+   Navbar vẫn hiển thị full nhưng bị chật
+========================================= */
+@media (min-width: 992px) and (max-width: 1280px) {
+    .navbar-brand-premium {
+        font-size: 1.3rem;
+        letter-spacing: 0;
+    }
+    .navbar-premium.logged-in .navbar-brand-premium {
+        font-size: 1.4rem;
+    }
+    .nav-link-premium {
+        padding: 0.5rem 0.55rem !important;
+        font-size: 0.72rem;
+        letter-spacing: 0;
+        margin: 0;
+    }
+    .navbar-premium.logged-in .nav-link-premium {
+        padding: 0.5rem 0.6rem !important;
+        font-size: 0.75rem;
+        letter-spacing: 0;
+    }
+    .cart-btn-premium {
+        padding: 9px 14px;
+        font-size: 0.75rem;
+        letter-spacing: 0;
+    }
+}
+
+/* =========================================
+   MOBILE (< 992px - Bootstrap lg breakpoint)
+========================================= */
+@media (max-width: 991.98px) {
+    .navbar-brand-premium {
+        font-size: 1.3rem;
+        letter-spacing: 0;
+    }
+
+    .navbar-premium.logged-in .navbar-brand-premium {
+        font-size: 1.4rem;
+    }
+
+    /* Dropdown menu đẹp và không đè lên hero section */
+    .navbar-collapse {
+        background: linear-gradient(180deg, rgba(30, 15, 0, 0.99) 0%, rgba(45, 27, 0, 1) 100%);
+        border-radius: 0 0 16px 16px;
+        padding: 0.5rem 1rem 1rem;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+        border-top: 1px solid rgba(212, 175, 55, 0.3);
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        margin: 0 -12px;
+    }
+
+    .nav-link-premium {
+        padding: 0.85rem 1rem !important;
+        margin: 0.1rem 0;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        min-height: 48px;
+        display: flex !important;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+
+    /* Bỏ border dưới của item cuối cùng trong nhóm nav */
+    .navbar-nav .nav-item:nth-last-child(2) .nav-link-premium {
+        border-bottom: none;
+    }
+
+    .nav-item:last-child {
+        margin-top: 0.75rem;
+        margin-left: 0 !important;
+    }
+
+    /* Nút giỏ hàng full-width, dễ bấm */
+    .cart-btn-premium {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.9rem 1.5rem;
+        width: 100%;
+        min-height: 48px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+
+    .cart-badge-premium {
+        top: -6px;
+        right: 10px;
+    }
+}
+
+/* =========================================
+   MOBILE NHỎ (< 576px)
+========================================= */
+@media (max-width: 575.98px) {
+    .navbar-premium {
+        padding: 0.7rem 0;
+    }
+    .navbar-brand-premium {
+        font-size: 1.15rem;
     }
 }

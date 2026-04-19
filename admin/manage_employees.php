@@ -351,9 +351,14 @@ $all_roles = getAllRoles();
         <div class="flex-grow-1">
             <!-- Header -->
             <div class="header d-flex justify-content-between align-items-center p-4 bg-light border-bottom">
-                <h2 class="m-0">
-                    <i class="fas fa-users me-2"></i>Quản lý Nhân Viên
-                </h2>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="m-0">
+                        <i class="fas fa-users me-2"></i>Quản lý Nhân Viên
+                    </h2>
+                </div>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                     <i class="fas fa-user-plus me-2"></i>Thêm Nhân Viên
                 </button>

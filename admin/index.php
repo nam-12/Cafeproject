@@ -251,30 +251,63 @@ logActivity('view_dashboard', 'dashboard', 'Truy cập trang chủ');
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
+            const sidebar = document.getElementById('adminSidebar');
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            
+            const sidebarOverlay = document.createElement('div');
+            sidebarOverlay.className = 'sidebar-overlay';
+
+            // Thêm overlay vào body
+            document.body.appendChild(sidebarOverlay);
+
             // Mobile menu toggle
-            if (mobileMenuBtn) {
+            if (mobileMenuBtn && sidebar) {
                 mobileMenuBtn.addEventListener('click', function() {
                     sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+
+                    // Prevent body scroll khi sidebar mở
+                    if (sidebar.classList.contains('show')) {
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        document.body.style.overflow = '';
+                    }
                 });
             }
-            
+
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                document.body.style.overflow = '';
+            });
+
             // Close sidebar when clicking outside on mobile
             document.addEventListener('click', function(event) {
-                if (window.innerWidth < 992 && 
-                    !sidebar.contains(event.target) && 
+                if (window.innerWidth < 992 &&
+                    !sidebar.contains(event.target) &&
                     !mobileMenuBtn.contains(event.target) &&
                     sidebar.classList.contains('show')) {
                     sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    document.body.style.overflow = '';
                 }
             });
-            
+
             // Handle window resize
             window.addEventListener('resize', function() {
                 if (window.innerWidth >= 992) {
                     sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Handle escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    document.body.style.overflow = '';
                 }
             });
         });

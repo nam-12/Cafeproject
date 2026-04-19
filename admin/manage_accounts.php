@@ -232,9 +232,14 @@ if (isset($_GET['user_id'])) {
         <div class="flex-grow-1">
             <!-- Header -->
             <div class="header d-flex justify-content-between align-items-center p-4 bg-light border-bottom">
-                <h2 class="m-0">
-                    <i class="fas fa-users-cog me-2"></i>Quản lý Tài khoản
-                </h2>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="m-0">
+                        <i class="fas fa-users-cog me-2"></i>Quản lý Tài khoản
+                    </h2>
+                </div>
 
             </div>
 

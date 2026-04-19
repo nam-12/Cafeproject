@@ -196,11 +196,16 @@ $actions = $pdo->query("
         <div class="flex-grow-1">
             <!-- Header -->
             <div class="header d-flex justify-content-between align-items-center p-4 bg-light border-bottom">
-                <div>
-                    <h2 class="m-0">
-                        <i class="fas fa-history me-2"></i>Nhật Ký Hoạt Động
-                    </h2>
-                    <small class="text-muted">Tổng: <span id="totalLogs">0</span> | Hôm nay: <span id="todayLogs">0</span> | Tuần: <span id="weekLogs">0</span> | Tháng: <span id="monthLogs">0</span></small>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 class="m-0">
+                            <i class="fas fa-history me-2"></i>Nhật Ký Hoạt Động
+                        </h2>
+                        <small class="text-muted">Tổng: <span id="totalLogs">0</span> | Hôm nay: <span id="todayLogs">0</span> | Tuần: <span id="weekLogs">0</span> | Tháng: <span id="monthLogs">0</span></small>
+                    </div>
                 </div>
                 <div class="d-flex gap-2">
                     <?php if (hasPermission('manage_roles')): ?>

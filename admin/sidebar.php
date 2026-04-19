@@ -178,11 +178,14 @@
         </button>
     </div>
 </aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.getElementById('adminSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         const toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 
         // Khởi tạo trạng thái sidebar từ localStorage
         function initSidebarState() {
@@ -219,8 +222,38 @@
             });
         }
 
+        function openMobileSidebar() {
+            sidebar.classList.add('show');
+            if (sidebarOverlay) sidebarOverlay.classList.add('show');
+        }
+
+        function closeMobileSidebar() {
+            sidebar.classList.remove('show');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('show');
+        }
+
         // Khởi tạo khi tải trang
         initSidebarState();
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', function () {
+                if (sidebar.classList.contains('show')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeMobileSidebar);
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && sidebar.classList.contains('show')) {
+                closeMobileSidebar();
+            }
+        });
 
         // Xử lý sự kiện toggle
         toggleButtons.forEach(btn => {

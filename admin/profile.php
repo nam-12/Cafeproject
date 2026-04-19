@@ -98,12 +98,17 @@ $module_names=['dashboard'=>'📊 Bảng Điều Khiển','products'=>'☕ Sản
     <main class="profile-main">
 
         <!-- Header -->
-        <div class="page-header">
-            <div class="page-header-left">
-                <div class="page-header-icon"><i class="fas fa-user"></i></div>
-                <div>
-                    <h1 class="page-title">Trang Cá Nhân</h1>
-                    <p class="page-subtitle">Quản lý thông tin tài khoản của bạn</p>
+        <div class="page-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-header-left">
+                    <div class="page-header-icon"><i class="fas fa-user"></i></div>
+                    <div>
+                        <h1 class="page-title">Trang Cá Nhân</h1>
+                        <p class="page-subtitle">Quản lý thông tin tài khoản của bạn</p>
+                    </div>
                 </div>
             </div>
             <button class="btn-gold-outline" id="manageDefaultsBtn">
