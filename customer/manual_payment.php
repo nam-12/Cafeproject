@@ -43,6 +43,11 @@ try {
         $order['order_number'],
         "DH " . $order['order_number']
     );
+
+    // Kiểm tra trạng thái của đơn hàng để hiển thị nút xác nhận chuyển khoản
+    $canConfirmTransfer = ($order['status'] === 'confirmed' && $order['payment_status'] === 'pending');
+    $waitingForAdmin = ($order['status'] === 'pending' && $order['payment_status'] === 'pending');
+    $transferAlreadyConfirmed = ($order['payment_status'] !== 'pending');
     
     // Xử lý xác nhận đã chuyển khoản
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_transfer'])) {
@@ -156,13 +161,27 @@ try {
                         <li>Nếu có vấn đề, vui lòng liên hệ: <strong><?php echo MAIL_FROM; ?></strong></li>
                     </ul>
                 </div>
-                
-                <form method="POST" class="confirm-form text-center">
+
+                <div style="display:none;">
                     <?php echo csrfField(); ?>
-                    <button type="submit" name="confirm_transfer" class="btn btn-success btn-lg btn-block">
-                        <i class="fas fa-check"></i> Tôi đã chuyển khoản
-                    </button>
-                </form>
+                </div>
+                
+                <?php if ($canConfirmTransfer): ?>
+                    <form method="POST" class="confirm-form text-center">
+                        <?php echo csrfField(); ?>
+                        <button type="submit" name="confirm_transfer" class="btn btn-success btn-lg btn-block">
+                            <i class="fas fa-check"></i> Tôi đã chuyển khoản
+                        </button>
+                    </form>
+                <?php elseif ($waitingForAdmin): ?>
+                    <div class="alert alert-info mt-4" role="alert">
+                        Đơn hàng đang chờ admin xác nhận. Khi admin xác nhận đơn hàng, nút "Tôi đã chuyển khoản" sẽ xuất hiện.
+                    </div>
+                <?php elseif ($transferAlreadyConfirmed): ?>
+                    <div class="alert alert-success mt-4" role="alert">
+                        Đơn hàng đã được xác nhận chuyển khoản hoặc đang chờ xử lý tiếp theo.
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         

@@ -82,7 +82,18 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
             ");
             $tracking_stmt->execute([$order_id]);
             $tracking_history = $tracking_stmt->fetchAll(PDO::FETCH_ASSOC);
-
+            // Nếu đơn hàng đã hủy, chỉ giữ lại các event từ hủy trở về trước
+            $cancel_index = null;
+            foreach ($tracking_history as $index => $track) {
+                if ($track['status'] === 'cancelled') {
+                    $cancel_index = $index;
+                    break;
+                }
+            }
+            if ($cancel_index !== null) {
+                $tracking_history = array_slice($tracking_history, $cancel_index);
+                $tracking_history = array_values($tracking_history);
+            }
             // --- NEW: nếu order_detail->status rỗng thì mặc định 'cancelled'
             $raw_detail_status = trim((string)($order_detail['status'] ?? ''));
             if ($raw_detail_status === '') {
@@ -98,29 +109,49 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
                 $current_index = array_search($current_status_code, $all_statuses);
                 
                 if ($current_index !== false) {
-                    // Lấy danh sách các status đã có trong tracking history
-                    $tracked_statuses = array_column($tracking_history, 'status');
-                    $created_time = strtotime($order_detail['created_at']);
-                    
-                    // Nếu không có tracking records, tạo từ pending đến current status
-                    if (count($tracking_history) === 0) {
-                        for ($i = 0; $i <= $current_index; $i++) {
-                            $tracking_history[] = [
-                                'status' => $all_statuses[$i],
-                                'note' => '',
-                                'created_at' => date('Y-m-d H:i:s', $created_time + ($i * 3600))
+                    // Nếu đơn hàng đã hủy, không thêm các trạng thái giả mạo sau hủy
+                    if ($current_status_code === 'cancelled') {
+                        if (count($tracking_history) === 0) {
+                            // Nếu không có record tracking nhưng đơn đã hủy, tạo ít nhất hai mốc: pending -> cancelled
+                            $created_time = strtotime($order_detail['created_at']);
+                            $tracking_history = [
+                                [
+                                    'status' => 'cancelled',
+                                    'note' => '',
+                                    'created_at' => date('Y-m-d H:i:s', $created_time + 3600)
+                                ],
+                                [
+                                    'status' => 'pending',
+                                    'note' => '',
+                                    'created_at' => date('Y-m-d H:i:s', $created_time)
+                                ],
                             ];
                         }
                     } else {
-                        // Nếu có tracking records nhưng không đủ, thêm các bước còn lại
-                        for ($i = 0; $i <= $current_index; $i++) {
-                            if (!in_array($all_statuses[$i], $tracked_statuses)) {
-                                // Thêm bước này nếu chưa có - TIME tính từ lúc tạo đơn + i*1h
+                        // Lấy danh sách các status đã có trong tracking history
+                        $tracked_statuses = array_column($tracking_history, 'status');
+                        $created_time = strtotime($order_detail['created_at']);
+                        
+                        // Nếu không có tracking records, tạo từ pending đến current status
+                        if (count($tracking_history) === 0) {
+                            for ($i = 0; $i <= $current_index; $i++) {
                                 $tracking_history[] = [
                                     'status' => $all_statuses[$i],
                                     'note' => '',
                                     'created_at' => date('Y-m-d H:i:s', $created_time + ($i * 3600))
                                 ];
+                            }
+                        } else {
+                            // Nếu có tracking records nhưng không đủ, thêm các bước còn lại
+                            for ($i = 0; $i <= $current_index; $i++) {
+                                if (!in_array($all_statuses[$i], $tracked_statuses)) {
+                                    // Thêm bước này nếu chưa có - TIME tính từ lúc tạo đơn + i*1h
+                                    $tracking_history[] = [
+                                        'status' => $all_statuses[$i],
+                                        'note' => '',
+                                        'created_at' => date('Y-m-d H:i:s', $created_time + ($i * 3600))
+                                    ];
+                                }
                             }
                         }
                     }

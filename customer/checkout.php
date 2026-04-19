@@ -101,6 +101,7 @@ $navbar_type = 'checkout';
                 <h2><i class="fas fa-coffee"></i>Thanh toán đơn hàng</h2>
             </div>
             <form method="POST" action="create_order.php" id="checkoutForm" novalidate>
+                <?php echo csrfField(); ?>
                 <input type="hidden" name="selected_items" value="<?php echo htmlspecialchars($_GET['selected_items'] ?? ''); ?>">
                 <input type="hidden" name="shipping_address" id="hidden_shipping_address" value="<?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?>">
                 <input type="hidden" name="client_shipping_fee" id="input_client_shipping_fee" value="0">
@@ -148,8 +149,7 @@ $navbar_type = 'checkout';
                                 <div class="form-floating">
                                     <textarea id="delivery_address" name="delivery_address" class="form-control" style="height: 100px;"
                                         placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-                                        minlength="10" maxlength="500" required autocomplete="street-address"
-                                        value="<?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?>"></textarea>
+                                        minlength="10" maxlength="500" required autocomplete="street-address"><?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?></textarea>
                                     <label for="delivery_address">Địa chỉ giao hàng <span class="text-danger">*</span></label>
                                 </div>
                                 <div class="form-text text-muted">
@@ -580,6 +580,9 @@ $navbar_type = 'checkout';
             const toastContainer = document.querySelector('.toast-container');
             const toastId = 'toast-' + Date.now();
             
+            // Escape message to prevent XSS
+            const escapedMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
             const toastHtml = `
                 <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header">
@@ -588,7 +591,7 @@ $navbar_type = 'checkout';
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
                     <div class="toast-body">
-                        ${message}
+                        ${escapedMessage}
                     </div>
                 </div>
             `;
@@ -646,6 +649,10 @@ $navbar_type = 'checkout';
                     
                     showToast('Áp dụng thành công! Giảm ' + new Intl.NumberFormat('vi-VN').format(discountAmount) + 'đ', 'success');
                 } else {
+                    // Reset discount UI if failed
+                    document.getElementById('row_discount').classList.add('d-none');
+                    document.getElementById('val_discount').textContent = '-0đ';
+                    document.dispatchEvent(new CustomEvent('couponApplied', { detail: { discount: 0 } }));
                     showToast(data.message || 'Lỗi áp dụng mã giảm giá', 'danger');
                 }
             })
