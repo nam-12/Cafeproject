@@ -18,9 +18,11 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             p.*,
-            c.name as category_name
+            c.name as category_name,
+            i.quantity as stock
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN inventory i ON p.id = i.product_id
         WHERE p.id = ?
     ");
     $stmt->execute([$productId]);
@@ -32,11 +34,27 @@ try {
         exit;
     }
 
+    // Fetch approved reviews
+    $stmtReviews = $pdo->prepare("
+        SELECT 
+            pr.*,
+            u.full_name as user_full_name,
+            u.avatar as profile_image
+        FROM product_reviews pr
+        LEFT JOIN users u ON pr.user_id = u.id
+        WHERE pr.product_id = ? AND pr.status = 'approved'
+        ORDER BY pr.created_at DESC
+    ");
+    $stmtReviews->execute([$productId]);
+    $reviews = $stmtReviews->fetchAll(PDO::FETCH_ASSOC);
+
+    $product['reviews'] = $reviews;
+
     echo json_encode($product);
 
 } catch (Exception $e) {
     error_log("Error fetching product: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Internal server error']);
+    echo json_encode(['error' => 'Internal server error: ' . $e->getMessage()]);
 }
 ?>

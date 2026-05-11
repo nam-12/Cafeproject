@@ -261,9 +261,6 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
         <main class="main-content">
             <div class="page-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
-                        <i class="fas fa-bars"></i>
-                    </button>
                     <div>
                         <h1><i class="fas fa-mug-hot me-2"></i>Quản lý sản phẩm</h1>
                     </div>
@@ -397,6 +394,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
             <!-- Products Table -->
             <div class="content-card table-container">
                 <?php if ($products): ?>
+                <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
@@ -516,6 +514,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                </div>
                 <?php else: ?>
                     <div class="empty-state">
                         <i class="fas fa-box-open"></i>

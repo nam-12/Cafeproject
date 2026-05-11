@@ -57,6 +57,52 @@ if (isset($_SESSION[$cacheKey])) {
     exit;
 }
 
+// ── Kiểm tra cache toàn cục (từ logs) ─────────────────────────
+// Lấy kết quả từ lần tìm kiếm gần nhất (trong 24h qua) có cùng query
+try {
+    $stmtCache = $pdo->prepare("
+        SELECT results_ids, created_at 
+        FROM ai_search_log 
+        WHERE query = ? 
+        AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ORDER BY id DESC LIMIT 1
+    ");
+    $stmtCache->execute([$query]);
+    $globalCache = $stmtCache->fetch(PDO::FETCH_ASSOC);
+
+    if ($globalCache) {
+        $resultIds = json_decode($globalCache['results_ids'], true);
+        if (!empty($resultIds)) {
+            // Lấy chi tiết sản phẩm và trả về ngay
+            $placeholders = implode(',', array_fill(0, count($resultIds), '?'));
+            $detailStmt = $pdo->prepare("
+                SELECT id, name, price, description, image, category_id
+                FROM products
+                WHERE id IN ($placeholders) AND status = 'active'
+            ");
+            $detailStmt->execute($resultIds);
+            $raw = $detailStmt->fetchAll(PDO::FETCH_ASSOC);
+            $indexed = array_column($raw, null, 'id');
+            $products = [];
+            foreach ($resultIds as $id) {
+                if (isset($indexed[$id])) $products[] = $indexed[$id];
+            }
+
+            $output = json_encode([
+                'products'  => $products,
+                'ai_used'   => true, // Vẫn đánh dấu là AI vì đây là kết quả từ AI lần trước
+                'ai_reason' => 'Kết quả tìm kiếm thông minh đã được tối ưu.',
+                'count'     => count($products),
+                'cached'    => true
+            ]);
+            echo $output;
+            exit;
+        }
+    }
+} catch (Exception $e) {
+    // Nếu lỗi cache thì tiếp tục tìm kiếm bình thường
+}
+
 // ── Lấy danh sách sản phẩm từ DB ────────────────────────────
 $stmt = $pdo->prepare(
     "SELECT p.id, p.name, p.price, p.category_id,
@@ -110,7 +156,7 @@ PROMPT;
 
     $aiResponse = callGeminiAPI($systemPrompt, [
         ['role' => 'user', 'content' => $userMessage]
-    ], $pdo);
+    ], $pdo, 4); // Timeout 4s để search nhanh
 
     // Parse JSON từ AI (xóa ```json ``` nếu có)
     $aiResponse = preg_replace('/```json\s*|```/i', '', $aiResponse);

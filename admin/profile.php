@@ -100,9 +100,6 @@ $module_names=['dashboard'=>'📊 Bảng Điều Khiển','products'=>'☕ Sản
         <!-- Header -->
         <div class="page-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
                 <div class="page-header-left">
                     <div class="page-header-icon"><i class="fas fa-user"></i></div>
                     <div>

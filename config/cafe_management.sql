@@ -1,16 +1,6 @@
--- ============================================
--- CƠ SỞ DỮ LIỆU HOÀN CHỈNH - CAFE MANAGEMENT
--- ĐÃ TÍCH HỢP GIẢM GIÁ SẢN PHẨM
--- ============================================
 
--- Tạo database
 CREATE DATABASE IF NOT EXISTS cafe_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE cafe_management;
-
--- ============================================
--- BẢNG CƠ BẢN
--- ============================================
-
 -- BẢNG DANH MỤC
 CREATE TABLE categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -18,7 +8,6 @@ CREATE TABLE categories (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- BẢNG SẢN PHẨM (ĐÃ THÊM CỘT GIẢM GIÁ)
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,   
@@ -39,7 +28,6 @@ CREATE TABLE products (
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
     INDEX idx_is_featured (is_featured),
     INDEX idx_discount_dates (discount_start_date, discount_end_date)
@@ -82,9 +70,6 @@ CREATE TABLE users (
     INDEX idx_is_active (is_active)
 );
 
--- ============================================
--- BẢNG PHÂN QUYỀN NHÂN VIÊN
--- ============================================
 
 -- BẢNG ĐỊNH NGHĨA ROLE (VAI TRÒ)
 CREATE TABLE roles (
@@ -144,9 +129,6 @@ CREATE TABLE activity_logs (
     INDEX idx_created (created_at)
 );
 
--- ============================================
--- BẢNG MÃ GIẢM GIÁ
--- ============================================
 
 CREATE TABLE coupons (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -199,9 +181,6 @@ CREATE TABLE user_coupons (
     UNIQUE KEY unique_user_coupon (user_id, coupon_id)
 );
 
--- ============================================
--- BẢNG ĐƠN HÀNG
--- ============================================
 
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -343,9 +322,6 @@ CREATE TABLE payment_logs (
     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL
 );
 
--- ============================================
--- DỮ LIỆU MẪU
--- ============================================
 
 INSERT INTO categories (name, description) VALUES
 ('Cà phê nóng', 'Các loại cà phê nóng truyền thống'),
@@ -446,9 +422,7 @@ INSERT INTO inventory (product_id, quantity, min_quantity) VALUES
 (1, 50, 10),(2, 40, 10),(3, 45, 10),(4, 30, 10),
 (5, 35, 10),(6, 25, 10),(7, 20, 10),(8, 18, 10),
 (9, 60, 10),(10, 15, 10),(11, 22, 10),(12, 28, 10);
--- ============================================
--- CẬP NHẬT CƠ SỞ DỮ LIỆU HIỆN TẠI (NẾU CẦN)
--- ============================================
+
 
 -- Thêm các cột mới vào bảng users nếu chưa có
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20) AFTER full_name;
@@ -461,14 +435,6 @@ ALTER TABLE users ADD INDEX IF NOT EXISTS idx_username (username);
 ALTER TABLE users ADD INDEX IF NOT EXISTS idx_role (role);
 ALTER TABLE users ADD INDEX IF NOT EXISTS idx_is_active (is_active);
 
--- ============================================
--- DỮ LIỆU MẪU
--- ============================================
-
--- XÓA DỮ LIỆU CŨ (CHỈ KHI CẦN RESET)
--- DELETE FROM user_roles WHERE user_id > 0;
--- DELETE FROM users WHERE id > 0;
-
 -- INSERT USERS (NGƯỜI DÙNG)
 INSERT INTO users (username, password, email, full_name, phone, address, role, is_active) VALUES
 ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@cafe.com',
@@ -479,10 +445,6 @@ INSERT INTO users (username, password, email, full_name, phone, address, role, i
  'Trần Thị B', '0912345678', '789 Đường DEF, Quận 3, TP.HCM', 'staff', 1),
 ('customer1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'customer1@gmail.com',
  'Lê Văn C', '0901234567', '321 Đường GHI, Quận 4, TP.HCM', 'customer', 1);
-
--- ============================================
--- DỮ LIỆU PHÂN QUYỀN
--- ============================================
 
 -- INSERT ROLES (VAI TRÒ)
 INSERT INTO roles (name, display_name, description) VALUES
@@ -542,7 +504,6 @@ INSERT INTO permissions (name, display_name, description, module) VALUES
 ('manage_roles', 'Quản lý vai trò', 'Quản lý vai trò và quyền hạn', 'users'),
 ('view_logs', 'Xem nhật ký hoạt động', 'Xem lịch sử hoạt động của nhân viên', 'settings');
 
--- GÁNH ROLE VÀ PERMISSIONS
 -- Admin có tất cả các quyền
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'admin';
@@ -624,9 +585,6 @@ SET p.ai_metadata = CONCAT(
     'Mô tả: ', p.description, '. ',
     'Thành phần: ', p.ingredients
 );
--- ============================================
--- STORED PROCEDURES
--- ============================================
 
 DELIMITER $$
 
@@ -651,9 +609,6 @@ END$$
 
 DELIMITER ;
 
--- ============================================
--- TRIGGERS
--- ============================================
 
 DELIMITER $$
 
@@ -828,14 +783,11 @@ INSERT IGNORE INTO `ai_settings` (`setting_key`, `setting_value`, `description`)
     ('ai_temperature',   '0.7', 'Độ sáng tạo của AI (0.1 - 1.0)');
 
 -- 4. Cập nhật bảng Products để AI "đọc" dữ liệu tốt hơn
--- Dùng 'IF NOT EXISTS' cho cột là tính năng của MariaDB/MySQL 8.0.19+
--- Nếu lỗi, hãy chạy lệnh ADD COLUMN bình thường.
 ALTER TABLE `products` 
     ADD COLUMN IF NOT EXISTS `ai_metadata` TEXT NULL 
     COMMENT 'Dữ liệu thô để AI phân tích: vị, thành phần, calo...';
 
 -- 5. Trigger/Update để tự động gom dữ liệu vào ai_metadata
--- Việc này giúp bạn không phải gửi quá nhiều cột sang API, chỉ cần gửi 1 cột metadata
 UPDATE `products` p
 LEFT JOIN `categories` c ON p.category_id = c.id
 SET p.ai_metadata = CONCAT(
@@ -867,13 +819,7 @@ ALTER TABLE `orders`
     ADD COLUMN IF NOT EXISTS `customer_lat`    DOUBLE      DEFAULT NULL COMMENT 'Latitude vị trí khách hàng (GPS)',
     ADD COLUMN IF NOT EXISTS `customer_lng`    DOUBLE      DEFAULT NULL COMMENT 'Longitude vị trí khách hàng (GPS)';
 
--- Tự động xóa cache cũ hơn 7 ngày (chạy định kỳ hoặc thêm vào cron)
--- DELETE FROM shipping_distance_cache WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY);
 
--- ============================================
--- BẢNG PHÍ VẬN CHUYỂN THEO KHOẢNG CÁCH (GPS)
--- Admin có thể sửa bảng phí mà không cần thay đổi code
--- ============================================
 CREATE TABLE IF NOT EXISTS `shipping_fee_tiers` (
     `id`         INT(11)       NOT NULL AUTO_INCREMENT,
     `min_km`     FLOAT         NOT NULL DEFAULT 0 COMMENT 'Khoảng cách tối thiểu (km)',

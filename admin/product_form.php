@@ -207,10 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="admin-layout">
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fas fa-bars"></i>
-        </button>
         
         <!-- Sidebar -->
         
@@ -409,11 +405,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile menu toggle
-        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-            document.getElementById('sidebarWrapper').classList.toggle('show');
-        });
-        
         // Hiển thị tên file đã chọn
         document.getElementById('image_file').addEventListener('change', function() {
             const fileName = this.files[0]?.name || '';

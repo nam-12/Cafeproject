@@ -1,4 +1,11 @@
 <link rel="stylesheet" href="../assets/cssad/sidebar.css">
+<link rel="stylesheet" href="../assets/cssad/responsive.css">
+
+<!-- Unified Mobile Menu Button (auto-injected by sidebar.php) -->
+<button class="mobile-menu-btn" id="globalMobileMenuBtn" type="button" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar-wrapper col-auto px-0" id="adminSidebar">
 
@@ -178,16 +185,19 @@
         </button>
     </div>
 </aside>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.getElementById('adminSidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 
-        // Khởi tạo trạng thái sidebar từ localStorage
+        // Collect ALL possible mobile menu buttons across different pages
+        const mobileMenuBtns = document.querySelectorAll(
+            '#globalMobileMenuBtn, #mobileMenuBtn, .mobile-menu-toggle, .mobile-menu-btn'
+        );
+
+        // ─── Desktop collapse state ───
         function initSidebarState() {
             const savedState = localStorage.getItem('sidebarCollapsed');
             if (savedState === 'true') {
@@ -197,65 +207,76 @@
             }
         }
 
-        // Lưu trạng thái sidebar
         function saveSidebarState(isCollapsed) {
             localStorage.setItem('sidebarCollapsed', isCollapsed);
         }
 
-        // Cập nhật icon nút toggle
         function updateToggleIcon(isCollapsed) {
             toggleButtons.forEach(btn => {
                 const icon = btn.querySelector('i');
                 const span = btn.querySelector('span');
-
                 if (isCollapsed) {
                     icon.className = 'fas fa-angles-right';
                     if (span) span.textContent = 'Mở rộng';
-                    // Cập nhật tooltip
                     btn.setAttribute('data-tooltip', 'Mở rộng');
                 } else {
                     icon.className = 'fas fa-angles-left';
                     if (span) span.textContent = 'Thu gọn';
-                    // Cập nhật tooltip
                     btn.setAttribute('data-tooltip', 'Thu gọn');
                 }
             });
         }
 
+        // ─── Mobile sidebar open/close ───
         function openMobileSidebar() {
             sidebar.classList.add('show');
             if (sidebarOverlay) sidebarOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden'; // prevent background scroll
         }
 
         function closeMobileSidebar() {
             sidebar.classList.remove('show');
             if (sidebarOverlay) sidebarOverlay.classList.remove('show');
+            document.body.style.overflow = '';
         }
 
-        // Khởi tạo khi tải trang
+        function toggleMobileSidebar() {
+            if (sidebar.classList.contains('show')) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
+            }
+        }
+
+        // Expose globally for pages using onclick="toggleSidebar()"
+        window.toggleSidebar = toggleMobileSidebar;
+
+        // ─── Init ───
         initSidebarState();
 
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', function () {
-                if (sidebar.classList.contains('show')) {
-                    closeMobileSidebar();
-                } else {
-                    openMobileSidebar();
-                }
+        // Bind ALL mobile menu buttons (unified)
+        mobileMenuBtns.forEach(btn => {
+            // Remove existing onclick to avoid double-firing
+            btn.removeAttribute('onclick');
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleMobileSidebar();
             });
-        }
+        });
 
+        // Overlay click closes sidebar
         if (sidebarOverlay) {
             sidebarOverlay.addEventListener('click', closeMobileSidebar);
         }
 
+        // ESC key closes sidebar
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && sidebar.classList.contains('show')) {
                 closeMobileSidebar();
             }
         });
 
-        // Xử lý sự kiện toggle
+        // Desktop collapse toggle
         toggleButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 const isCollapsed = sidebar.classList.toggle('collapsed');
@@ -265,7 +286,7 @@
             });
         });
 
-        // Thêm hiệu ứng hover cho nav links
+        // Nav link hover effects
         const navLinks = sidebar.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             link.addEventListener('mouseenter', function () {
@@ -274,5 +295,5 @@
                 }
             });
         });
-    })();
+    });
 </script>

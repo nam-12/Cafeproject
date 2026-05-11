@@ -88,10 +88,6 @@ foreach ($products as $product) {
     <link rel="stylesheet" href="../assets/cssad/order_form.css">
 </head>
 <body class="admin-layout">
-    <!-- Mobile menu button -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-    </button>
 
     <?php include 'sidebar.php'; ?>
 
@@ -205,11 +201,6 @@ foreach ($products as $product) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Mobile menu toggle
-        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-            document.querySelector('.sidebar-wrapper').classList.toggle('show');
-        });
-
         let cart = [];
 
         function addToCart(product) {

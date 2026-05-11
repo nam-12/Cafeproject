@@ -62,8 +62,34 @@ function fetchProducts(searchQuery, categoryId, page = 1) {
     
     // Reset load more state
     loadMorePage = 1;
+
+    // 1. Loading UI state (Search Pulse & Button)
+    const searchContainer = document.querySelector('.search-container-premium');
+    const searchBtn = document.querySelector('.search-btn-premium');
+    const originalBtnHtml = searchBtn ? searchBtn.innerHTML : '';
     
-    productListing.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x" style="color: #6f4e37;"></i><p class="mt-3">Đang tải sản phẩm...</p></div>';
+    if (searchContainer) searchContainer.classList.add('is-loading');
+    if (searchBtn) {
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Tìm kiếm';
+    }
+
+    // 2. Skeleton UI in product listing
+    let skeletonHtml = '<div class="row g-4">';
+    for(let i=0; i<8; i++) {
+        skeletonHtml += `
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="skeleton-card">
+                    <div class="skeleton-shimmer"></div>
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text medium"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                </div>
+            </div>`;
+    }
+    skeletonHtml += '</div>';
+    productListing.innerHTML = skeletonHtml;
 
     let url = `fetch_products.php?search=${encodeURIComponent(searchQuery)}&page=${page}&mode=replace`;
     if (categoryId) {
@@ -73,6 +99,13 @@ function fetchProducts(searchQuery, categoryId, page = 1) {
     fetch(url)
         .then(response => response.text())
         .then(html => {
+            // Remove loading states
+            if (searchContainer) searchContainer.classList.remove('is-loading');
+            if (searchBtn) {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = originalBtnHtml;
+            }
+
             productListing.innerHTML = html;
 
             // Cập nhật dữ liệu JS

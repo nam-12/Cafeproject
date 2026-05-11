@@ -13,14 +13,18 @@ $offset = ($page - 1) * $limit;
 // 2. Đếm tổng số sản phẩm để tính toán phân trang
 $count_sql = "SELECT COUNT(DISTINCT p.id) FROM products p WHERE p.status = 'active'";
 if ($search) {
-    $count_sql .= " AND p.name LIKE :search";
+    $count_sql .= " AND (p.name LIKE :search1 OR p.description LIKE :search2 OR p.ai_metadata LIKE :search3)";
 }
 if ($category_filter) {
     $count_sql .= " AND p.category_id = :category";
 }
 
 $count_stmt = $pdo->prepare($count_sql);
-if ($search) $count_stmt->bindValue(':search', '%' . $search . '%');
+if ($search) {
+    $count_stmt->bindValue(':search1', '%' . $search . '%');
+    $count_stmt->bindValue(':search2', '%' . $search . '%');
+    $count_stmt->bindValue(':search3', '%' . $search . '%');
+}
 if ($category_filter) $count_stmt->bindValue(':category', $category_filter);
 $count_stmt->execute();
 $total_products = $count_stmt->fetchColumn();
@@ -37,7 +41,7 @@ $sql = "SELECT p.*, c.name as category_name, i.quantity as stock,
         WHERE p.status = 'active'";
 
 if ($search) {
-    $sql .= " AND p.name LIKE :search";
+    $sql .= " AND (p.name LIKE :search1 OR p.description LIKE :search2 OR p.ai_metadata LIKE :search3)";
 }
 if ($category_filter) {
     $sql .= " AND p.category_id = :category";
@@ -48,7 +52,11 @@ $sql .= " GROUP BY p.id, c.name, i.quantity
           LIMIT $limit OFFSET $offset";
 
 $stmt = $pdo->prepare($sql);
-if ($search) $stmt->bindValue(':search', '%' . $search . '%');
+if ($search) {
+    $stmt->bindValue(':search1', '%' . $search . '%');
+    $stmt->bindValue(':search2', '%' . $search . '%');
+    $stmt->bindValue(':search3', '%' . $search . '%');
+}
 if ($category_filter) $stmt->bindValue(':category', $category_filter);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);

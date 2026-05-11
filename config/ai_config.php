@@ -36,7 +36,7 @@ function getAiSetting(PDO $pdo, string $key, string $default = ''): string {
  * @return string               Phản hồi văn bản từ AI
  * @throws RuntimeException     Khi API thất bại
  */
-function callGeminiAPI(string $systemPrompt, array $messages, PDO $pdo): string {
+function callGeminiAPI(string $systemPrompt, array $messages, PDO $pdo, int $timeout = 15): string {
     $apiKey = getAiSetting($pdo, 'gemini_api_key');
 
     $invalidKeyExamples = ['YOUR_GEMINI_API_KEY_HERE'];
@@ -81,7 +81,7 @@ function callGeminiAPI(string $systemPrompt, array $messages, PDO $pdo): string 
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_TIMEOUT        => $timeout,
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
         ],

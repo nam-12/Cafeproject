@@ -258,7 +258,17 @@ $hasMoreProducts = count($products) > $initialDisplay;
                             <p class="mb-1"><strong>Thành phần:</strong> <span id="detailIngredients"></span></p>
                             <p class="mb-0"><strong>Năng lượng:</strong> <span id="detailCalories"></span> kcal</p>
                         </div>
-                        <p id="detailDescription" class="text-light-50"></p>
+                        <p id="detailDescription" class="text-light-50 mb-4"></p>
+                        
+                        <!-- Reviews Section -->
+                        <div class="product-reviews-section mt-4 pt-3" style="border-top: 1px solid rgba(193, 155, 118, 0.2);">
+                            <h5 style="color: #c19b76; font-size: 1.1rem; margin-bottom: 15px;">
+                                <i class="fas fa-star me-2"></i>Đánh giá (<span id="reviewCount">0</span>)
+                            </h5>
+                            <div id="reviewsList" class="reviews-scroll-area" style="max-height: 200px; overflow-y: auto; padding-right: 10px;">
+                                <!-- Reviews will be loaded here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -369,25 +379,24 @@ const initialDisplay = <?= $initialDisplay ?>;
 
 // Product detail modal
 async function showProductDetail(productId) {
-    let product = products.find(p => p.id == productId);
+    // Show loading
+    const card = document.querySelector(`.product-card-premium[onclick*="${productId}"]`);
+    if (card) card.style.opacity = '0.7';
 
-    if (!product) {
-        try {
-            const response = await fetch(`customer/get_product.php?id=${productId}`);
-            if (response.ok) {
-                product = await response.json();
-            }
-        } catch (err) {
-            console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
+    try {
+        const response = await fetch(`customer/get_product.php?id=${productId}`);
+        if (response.ok) {
+            const product = await response.json();
+            if (card) card.style.opacity = '1';
+            populateProductModal(product);
+        } else {
+            throw new Error('Fetch failed');
         }
-    }
-
-    if (!product) {
+    } catch (err) {
+        console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
         alert('Không tìm thấy sản phẩm. Vui lòng thử lại.');
-        return;
+        if (card) card.style.opacity = '1';
     }
-
-    populateProductModal(product);
 }
 
 function populateProductModal(product) {
@@ -421,8 +430,56 @@ function populateProductModal(product) {
     document.getElementById('detailDescription').textContent = product.description || '';
 
     const modalEl = document.getElementById('productDetailModal');
+    
+    // Render reviews
+    const reviewsList = document.getElementById('reviewsList');
+    const reviewCount = document.getElementById('reviewCount');
+    const reviews = product.reviews || [];
+    
+    reviewCount.textContent = reviews.length;
+    
+    if (reviews.length > 0) {
+        reviewsList.innerHTML = reviews.map(rev => `
+            <div class="review-item mb-3 pb-2" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="reviewer-avatar me-2">
+                        <img src="${rev.profile_image ? 'admin/' + rev.profile_image.replace(/^\//, '') : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.customer_name || rev.user_full_name) + '&background=c19b76&color=140f0a'}" 
+                             alt="avatar" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover; border: 1px solid rgba(193, 155, 118, 0.3);">
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="font-size: 0.9rem; color: #fff;">${rev.customer_name || rev.user_full_name || 'Khách hàng'}</span>
+                            <span class="text-muted" style="font-size: 0.75rem;">${new Date(rev.created_at).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-stars mb-1" style="color: #c19b76; font-size: 0.7rem;">
+                    ${renderStars(rev.rating)}
+                </div>
+                <div class="review-comment" style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                    ${rev.comment || 'Không có bình luận.'}
+                </div>
+                ${rev.admin_reply ? `
+                <div class="admin-reply mt-2 p-2 rounded" style="background: rgba(193, 155, 118, 0.1); border-left: 2px solid #c19b76; font-size: 0.8rem;">
+                    <strong style="color: #c19b76;">Phản hồi:</strong> ${rev.admin_reply}
+                </div>
+                ` : ''}
+            </div>
+        `).join('');
+    } else {
+        reviewsList.innerHTML = '<p class="text-muted text-center py-3">Chưa có đánh giá nào cho sản phẩm này.</p>';
+    }
+
     const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
     bsModal.show();
+}
+
+function renderStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        stars += `<i class="fa${i <= rating ? 's' : 'r'} fa-star"></i>`;
+    }
+    return stars;
 }
 
 // Swiper initialization

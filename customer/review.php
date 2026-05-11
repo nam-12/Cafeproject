@@ -92,6 +92,7 @@ if ($selected_product) {
             SELECT *
             FROM product_reviews
             WHERE product_id = ?
+            AND order_id = ?
             AND (
                     (user_id IS NOT NULL AND user_id = ?)
                 OR (user_id IS NULL AND customer_name = ?)
@@ -101,6 +102,7 @@ if ($selected_product) {
 
         $check_stmt->execute([
             $selected_product['product_id'],
+            $order_id,
             $user_id,
             $username
         ]);
@@ -137,12 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selected_product) {
                 // ===== TẠO ĐÁNH GIÁ MỚI =====
                 $insert_stmt = $pdo->prepare("
                     INSERT INTO product_reviews 
-                    (product_id, user_id, customer_name, rating, comment, status, created_at)
-                    VALUES (?, ?, ?, ?, ?, 'approved', NOW())
+                    (product_id, order_id, user_id, customer_name, rating, comment, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 'approved', NOW())
                 ");
 
                 $insert_stmt->execute([
                     $selected_product['product_id'],
+                    $order_id,
                     $user_id,
                     $username,
                     $rating,

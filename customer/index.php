@@ -18,11 +18,15 @@ $category_filter = isset($_GET['category']) ? $_GET['category'] : '';
 
 // 1. Đếm tổng số sản phẩm
 $count_sql = "SELECT COUNT(*) FROM products WHERE status = 'active'";
-if ($search) $count_sql .= " AND name LIKE :search";
+if ($search) $count_sql .= " AND (name LIKE :search1 OR description LIKE :search2 OR ai_metadata LIKE :search3)";
 if ($category_filter) $count_sql .= " AND category_id = :category";
 
 $count_stmt = $pdo->prepare($count_sql);
-if ($search) $count_stmt->bindValue(':search', '%' . $search . '%');
+if ($search) {
+    $count_stmt->bindValue(':search1', '%' . $search . '%');
+    $count_stmt->bindValue(':search2', '%' . $search . '%');
+    $count_stmt->bindValue(':search3', '%' . $search . '%');
+}
 if ($category_filter) $count_stmt->bindValue(':category', $category_filter);
 $count_stmt->execute();
 $total_products = $count_stmt->fetchColumn();
@@ -38,7 +42,7 @@ $sql = "SELECT p.*, c.name as category_name, i.quantity as stock,
         LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
         WHERE p.status = 'active'";
 
-if ($search) $sql .= " AND p.name LIKE :search";
+if ($search) $sql .= " AND (p.name LIKE :search1 OR p.description LIKE :search2 OR p.ai_metadata LIKE :search3)";
 if ($category_filter) $sql .= " AND p.category_id = :category";
 
 $sql .= " GROUP BY p.id, c.name, i.quantity 
@@ -46,7 +50,11 @@ $sql .= " GROUP BY p.id, c.name, i.quantity
           LIMIT $limit OFFSET $offset";
 
 $stmt = $pdo->prepare($sql);
-if ($search) $stmt->bindValue(':search', '%' . $search . '%');
+if ($search) {
+    $stmt->bindValue(':search1', '%' . $search . '%');
+    $stmt->bindValue(':search2', '%' . $search . '%');
+    $stmt->bindValue(':search3', '%' . $search . '%');
+}
 if ($category_filter) $stmt->bindValue(':category', $category_filter);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -282,7 +290,21 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                                 </div>
                                 <div class="product-description-premium mb-4" id="detailDescription" style="font-style: italic; color: #666;"></div>
                                 
-                                <div class="mt-auto">
+                                <!-- Reviews Section -->
+                                <div class="product-reviews-section mt-4 pt-4 border-top">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0"><i class="fas fa-star text-warning me-2"></i>Đánh giá (<span id="reviewCount">0</span>)</h5>
+                                    </div>
+                                    <div id="reviewsList" class="reviews-scroll-area">
+                                        <!-- Reviews will be loaded here -->
+                                        <div class="empty-reviews text-center py-4 text-muted">
+                                            <i class="fas fa-comment-slash d-block mb-2 fa-2x"></i>
+                                            Chưa có đánh giá nào cho sản phẩm này.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-auto pt-4">
                                     <button type="button" class="btn-add-cart-premium w-100" id="modalAddCartBtn">
                                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                                     </button>
@@ -312,31 +334,60 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     <script src="../assets/js/ai_search.js"></script>
     <script>
         let currentProducts = <?php echo json_encode($products); ?>;
+        // Danh sách toàn bộ sản phẩm để tìm kiếm tức thì
+        const allProductsMetadata = <?php 
+            $allStmt = $pdo->query("SELECT id, name, price, image FROM products WHERE status = 'active'");
+            $allProducts = $allStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Hàm loại bỏ dấu tiếng Việt an toàn hơn iconv
+            function remove_accents($str) {
+                $accents = array(
+                    'a'=>'á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ',
+                    'd'=>'đ',
+                    'e'=>'é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ',
+                    'i'=>'í|ì|ỉ|ĩ|ị',
+                    'o'=>'ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ',
+                    'u'=>'ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự',
+                    'y'=>'ý|ỳ|ỷ|ỹ|ỵ',
+                );
+                foreach($accents as $non_accent => $accent_regex) {
+                    $str = preg_replace("/($accent_regex)/i", $non_accent, $str);
+                }
+                return $str;
+            }
+
+            foreach ($allProducts as &$p) {
+                $p['search_name'] = strtolower(remove_accents($p['name']));
+            }
+            echo json_encode($allProducts);
+        ?>;
         let loadMorePage = 1;
         let totalProductsCount = <?= $total_products ?>;
         const INITIAL_SEARCH = '<?php echo addslashes($search); ?>';
         const INITIAL_CATEGORY_ID = '<?php echo addslashes($category_filter); ?>';
 
         async function showProductDetail(productId) {
-            // Tìm sản phẩm trong mảng currentProducts (mảng này sẽ được AJAX cập nhật ở fetch_products.php)
-            let product = currentProducts.find(p => p.id == productId);
+            // Hiển thị loading nếu cần (tùy chọn)
+            const card = document.querySelector(`.product-card-premium[onclick*="${productId}"]`);
+            if (card) card.style.opacity = '0.7';
 
-            if (!product) {
-                try {
-                    const response = await fetch(`get_product.php?id=${productId}`);
-                    if (response.ok) {
-                        product = await response.json();
-                    }
-                } catch (err) {
-                    console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
+            try {
+                const response = await fetch(`get_product.php?id=${productId}`);
+                if (response.ok) {
+                    const product = await response.json();
+                    if (card) card.style.opacity = '1';
+                    renderProductDetail(product);
+                } else {
+                    throw new Error('Fetch failed');
                 }
-            }
-
-            if (!product) {
+            } catch (err) {
+                console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
                 alert('Không tìm thấy sản phẩm. Vui lòng thử lại.');
-                return;
+                if (card) card.style.opacity = '1';
             }
+        }
 
+        function renderProductDetail(product) {
             // Xử lý ảnh
             let imageName = (product.image || '').replace('uploads/', '').replace('/uploads/', '');
             document.getElementById('detailImage').src = imageName ? "../admin/uploads/" + imageName : "../admin/uploads/no-image.jpg";
@@ -383,9 +434,64 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                 modalAddBtn.disabled = true;
                 modalAddBtn.innerHTML = '<i class="fas fa-times-circle"></i> Tạm hết hàng';
             }
+
+            // Hiển thị đánh giá
+            const reviewsList = document.getElementById('reviewsList');
+            const reviewCount = document.getElementById('reviewCount');
+            const reviews = product.reviews || [];
+            
+            reviewCount.textContent = reviews.length;
+            
+            if (reviews.length > 0) {
+                reviewsList.innerHTML = reviews.map(rev => `
+                    <div class="review-item mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="reviewer-avatar me-2">
+                                <img src="${rev.profile_image ? '../admin/' + rev.profile_image : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.customer_name || rev.user_full_name) + '&background=f5e6d3&color=6f4e37'}" 
+                                     alt="avatar" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                            </div>
+                            <div class="reviewer-info">
+                                <div class="reviewer-name fw-bold" style="font-size: 0.9rem; color: #333;">
+                                    ${rev.customer_name || rev.user_full_name || 'Khách hàng'}
+                                </div>
+                                <div class="review-stars" style="font-size: 0.75rem; color: #ffc107;">
+                                    ${renderStars(rev.rating)}
+                                </div>
+                            </div>
+                            <div class="review-date ms-auto text-muted" style="font-size: 0.75rem;">
+                                ${new Date(rev.created_at).toLocaleDateString('vi-VN')}
+                            </div>
+                        </div>
+                        <div class="review-comment" style="font-size: 0.9rem; color: #555; padding-left: 40px;">
+                            ${rev.comment || 'Không có bình luận.'}
+                        </div>
+                        ${rev.admin_reply ? `
+                        <div class="admin-reply mt-2 p-2 rounded" style="background: #f8f9fa; border-left: 3px solid #6f4e37; margin-left: 40px; font-size: 0.85rem;">
+                            <div class="fw-bold mb-1" style="color: #6f4e37;"><i class="fas fa-reply me-1"></i>Phản hồi từ cửa hàng:</div>
+                            <div class="text-muted">${rev.admin_reply}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } else {
+                reviewsList.innerHTML = `
+                    <div class="empty-reviews text-center py-4 text-muted">
+                        <i class="fas fa-comment-slash d-block mb-2 fa-2x"></i>
+                        Chưa có đánh giá nào cho sản phẩm này.
+                    </div>
+                `;
+            }
             
             const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
             modal.show();
+        }
+
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<i class="fa${i <= rating ? 's' : 'r'} fa-star"></i>`;
+            }
+            return stars;
         }
     </script>
     <script src="../assets/js/index.js"></script>

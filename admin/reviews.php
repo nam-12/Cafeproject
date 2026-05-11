@@ -403,11 +403,6 @@ function buildPaginationUrl($page) {
         <div class="spinner"></div>
     </div>
 
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
-
     <div class="layout-container">
         <!-- Sidebar -->
         <?php include 'sidebar.php'; ?>
@@ -883,10 +878,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Mobile menu toggle
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('active');
-}</script>
+</script>
 </body>
 </html>

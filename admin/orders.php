@@ -209,10 +209,6 @@ while ($row = $stats_stmt->fetch()) {
 </head>
 
 <body class="admin-layout">
-    <!-- Nút menu cho mobile -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-    </button>
 
         <?php include 'sidebar.php'; ?>
    
@@ -633,10 +629,7 @@ while ($row = $stats_stmt->fetch()) {
             }
         }
 
-        // Xử lý menu di động
-        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
+
 
         // Tự động ẩn alert sau 2 giây
         setTimeout(() => {

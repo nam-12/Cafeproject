@@ -7,9 +7,10 @@
     'use strict';
 
     // ── Cấu hình ────────────────────────────────────────────
-    const DEBOUNCE_MS = 400;      // Đợi 400ms sau khi ngừng gõ
-    const MIN_CHARS   = 2;        // Ký tự tối thiểu mới bắt đầu tìm
+    const DEBOUNCE_MS = 150;      // Giảm xuống 150ms để cực nhanh
+    const MIN_CHARS   = 2;        
     const SEARCH_API  = 'search.php';
+    const searchCache = new Map(); // Cache kết quả tìm kiếm trong session hiện tại
 
     // ── DOM references ──────────────────────────────────────
     const input   = document.getElementById('ai-search-input') || document.getElementById('searchInput');
@@ -97,6 +98,8 @@
 
             card.addEventListener('click', () => {
                 logClick(p.id);
+                results.style.display = 'none'; // Đóng dropdown sau khi chọn
+                
                 if (typeof showProductDetail === 'function') {
                     showProductDetail(p.id);
                 } else {
@@ -117,20 +120,52 @@
             return;
         }
 
-        // Hủy request cũ nếu đang chạy
+        // 1. Luôn hiện khung kết quả ngay lập tức
+        results.style.display = 'block';
+
+        // 2. Kiểm tra cache trước
+        if (searchCache.has(query)) {
+            renderResults(searchCache.get(query));
+            return;
+        }
+
+        // 3. Hủy request cũ nếu đang chạy
         if (currentController) currentController.abort();
         currentController = new AbortController();
 
-        // Hiện loading
-        results.style.display = 'block';
-        results.innerHTML = `
-            <div class="ai-loading">
-                <div class="ai-spinner"></div>
-                Đang tìm kiếm...
-            </div>`;
-
         if (badge) badge.style.display = 'none';
         if (reason) reason.style.display = 'none';
+
+        // ── Tìm kiếm tức thì tại local (phản hồi ngay lập tức) ──
+        if (typeof allProductsMetadata !== 'undefined') {
+            const cleanQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+            
+            const localResults = allProductsMetadata.filter(p => 
+                (p.search_name && p.search_name.includes(cleanQuery)) || 
+                p.name.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 5);
+
+            if (localResults.length > 0) {
+                renderResults({ products: localResults, ai_used: false });
+            } else {
+                // Skeleton Dropdown
+                results.innerHTML = `
+                    <div class="ai-loading-premium">
+                        <div class="skeleton-dropdown-item"></div>
+                        <div class="skeleton-dropdown-item"></div>
+                        <div class="skeleton-dropdown-item"></div>
+                        <div class="ai-pulse-text">Đang tìm kiếm...</div>
+                    </div>`;
+            }
+        } else {
+            // Skeleton Dropdown
+            results.innerHTML = `
+                <div class="ai-loading-premium">
+                    <div class="skeleton-dropdown-item"></div>
+                    <div class="skeleton-dropdown-item"></div>
+                    <div class="ai-pulse-text">Đang tìm kiếm...</div>
+                </div>`;
+        }
 
         try {
             const resp = await fetch(
@@ -139,6 +174,10 @@
             );
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             const data = await resp.json();
+            
+            // Lưu vào cache
+            searchCache.set(query, data);
+            
             renderResults(data);
 
         } catch (err) {

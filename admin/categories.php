@@ -74,9 +74,6 @@ if (isset($_GET['delete'])) {
     <div class="content-wrapper">
         <div class="page-header">
             <div class="d-flex align-items-center">
-                <button class="btn btn-sm mobile-menu-btn me-3" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
                 <h1><i class="fas fa-folder me-2"></i>Danh mục</h1>
             </div>
             <div class="d-flex gap-2">
@@ -193,33 +190,6 @@ if (isset($_GET['delete'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            
-            // Mobile menu toggle
-            if (mobileMenuBtn) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('show');
-                });
-            }
-            
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function(event) {
-                if (window.innerWidth < 992 && 
-                    !sidebar.contains(event.target) && 
-                    !mobileMenuBtn.contains(event.target) &&
-                    sidebar.classList.contains('show')) {
-                    sidebar.classList.remove('show');
-                }
-            });
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 992) {
-                    sidebar.classList.remove('show');
-                }
-            });
-            
             // Tự động ẩn alert sau 2 giây
             setTimeout(() => {
                 const alerts = document.querySelectorAll('.alert.alert-dismissible');

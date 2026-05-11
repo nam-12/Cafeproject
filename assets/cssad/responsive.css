@@ -1,0 +1,461 @@
+/* ==============================================
+   ADMIN RESPONSIVE FIX — Shared across all pages
+   Loaded AFTER page-specific CSS to override
+============================================== */
+
+/* Sidebar overlay — always present, shown via JS */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1039;
+    backdrop-filter: blur(3px);
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    display: block;
+}
+
+/* ── MOBILE: < 992px ─────────────────────────── */
+@media (max-width: 991.98px) {
+
+    /* Layout */
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .content-wrapper,
+    .main-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1rem !important;
+        padding-top: 4.5rem !important; /* space for mobile menu btn */
+        overflow-x: hidden;
+    }
+
+    /* Sidebar (handled by sidebar.css, reinforce here) */
+    .sidebar-wrapper {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100vh !important;
+        z-index: 1050 !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    .sidebar-wrapper.show {
+        transform: translateX(0) !important;
+    }
+
+    /* Mobile menu button — unified for all pages */
+    .mobile-menu-btn,
+    .mobile-menu-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        position: fixed !important;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 1040;
+        width: 44px;
+        height: 44px;
+        background: var(--card-bg, #ffffff);
+        border: 2px solid var(--border-dark, #94a3b8);
+        border-radius: 10px;
+        color: var(--text-primary, #334155);
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transition: all 0.3s ease;
+        padding: 0;
+    }
+
+    .mobile-menu-btn:hover,
+    .mobile-menu-toggle:hover {
+        background: var(--primary-light, #eef2fb);
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+    }
+
+    /* Page header */
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem !important;
+        line-height: 1.3;
+    }
+
+    .page-header .btn,
+    .page-header a.btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .date-display {
+        align-self: stretch;
+        justify-content: center;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Cards */
+    .content-card .card-header,
+    .card-header {
+        padding: 1rem !important;
+        font-size: 0.95rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .content-card .card-body,
+    .card-body {
+        padding: 0.75rem !important;
+    }
+
+    /* Tables — horizontal scroll */
+    .table-responsive,
+    .content-card .card-body,
+    .card-body {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 500px; /* force scroll if narrower */
+    }
+
+    .table th,
+    .table td {
+        padding: 0.6rem 0.5rem !important;
+        font-size: 0.82rem !important;
+        white-space: nowrap;
+    }
+
+    /* Table action buttons */
+    .table-actions {
+        gap: 0.25rem !important;
+        flex-wrap: nowrap;
+    }
+
+    .table-actions .btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Action buttons in products page */
+    .action-buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 0.25rem !important;
+    }
+
+    .action-buttons .btn-sm {
+        font-size: 0.72rem !important;
+        padding: 0.25rem 0.5rem !important;
+        width: auto !important;
+    }
+
+    /* Stats cards */
+    .stat-card .card-body {
+        padding: 1rem !important;
+    }
+
+    .stat-value {
+        font-size: 1.75rem !important;
+    }
+
+    .stat-icon {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.25rem !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Quick actions */
+    .quick-actions {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .quick-action-btn {
+        flex: 1 1 45% !important;
+        padding: 1rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    .quick-action-btn i {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Filter forms */
+    .filter-card .card-body,
+    .filter-card .row {
+        gap: 0.5rem;
+    }
+
+    /* Modals */
+    .modal-dialog {
+        margin: 0.5rem !important;
+        max-width: calc(100vw - 1rem) !important;
+    }
+
+    .modal-header {
+        padding: 1rem !important;
+    }
+
+    .modal-body {
+        padding: 1rem !important;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        padding: 0.75rem 1rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Forms */
+    .form-control,
+    .form-select {
+        font-size: 0.9rem !important;
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.2rem;
+    }
+
+    .pagination .page-link {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Product image cells */
+    .product-image-cell {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    /* Alerts */
+    .alert-stock {
+        padding: 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    .alert-stock i {
+        font-size: 1.5rem !important;
+    }
+
+    /* Revenue bars */
+    .revenue-bar {
+        height: 32px !important;
+    }
+
+    .revenue-bar-label,
+    .revenue-bar-value {
+        font-size: 0.75rem !important;
+    }
+
+    /* Order detail / print buttons */
+    .btn-group {
+        flex-wrap: wrap;
+    }
+
+    /* Leaflet maps in modals */
+    #orderDetailMap {
+        height: 200px !important;
+    }
+
+    /* ── Coupons page (layout-container) ── */
+    .layout-container {
+        flex-direction: column;
+    }
+
+    .layout-container .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 1rem !important;
+        padding-top: 4.5rem !important;
+    }
+
+    .header-section {
+        flex-direction: column !important;
+        gap: 0.75rem;
+        padding: 1rem !important;
+    }
+
+    .header-title h1 {
+        font-size: 1.25rem !important;
+    }
+
+    .header-icon {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 20px !important;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-container {
+        flex-direction: column;
+    }
+
+    .search-box {
+        min-width: 100% !important;
+    }
+
+    .filter-select {
+        min-width: 100% !important;
+    }
+
+    .mobile-menu-toggle {
+        display: block !important;
+    }
+
+    /* ── Activity logs page (d-flex layout) ── */
+    .d-flex > .flex-grow-1 > .header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+        padding: 1rem !important;
+        padding-top: 4rem !important;
+    }
+
+    .d-flex > .flex-grow-1 > .header h2 {
+        font-size: 1.25rem;
+    }
+
+    .d-flex > .flex-grow-1 > .header .d-flex.gap-2 {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .d-flex > .flex-grow-1 > .header .d-flex.gap-2 .btn {
+        flex: 1;
+        font-size: 0.8rem;
+    }
+
+    .filter-section {
+        padding: 0.75rem !important;
+    }
+
+    .filter-section .row {
+        gap: 0.5rem;
+    }
+}
+
+/* ── SMALL MOBILE: < 576px ─────────────────────── */
+@media (max-width: 575.98px) {
+
+    .content-wrapper,
+    .main-content {
+        padding: 0.75rem !important;
+        padding-top: 4rem !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Stack stats vertically on very small screens */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Quick actions single column */
+    .quick-action-btn {
+        flex: 1 1 100% !important;
+    }
+
+    .stat-value {
+        font-size: 1.5rem !important;
+    }
+
+    .table {
+        min-width: 400px;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.78rem !important;
+        padding: 0.4rem !important;
+    }
+
+    /* Modal fullscreen on phone */
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100vw !important;
+        min-height: 100vh;
+    }
+
+    .modal-content {
+        border-radius: 0 !important;
+        min-height: 100vh;
+    }
+}
+
+/* ── TABLET: 768px–991px ─────────────────────── */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .content-wrapper,
+    .main-content {
+        padding: 1.25rem !important;
+        padding-top: 4.5rem !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .table {
+        min-width: auto;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* ── DESKTOP ≥ 992px ─────────────────────── */
+@media (min-width: 992px) {
+    .mobile-menu-btn,
+    .mobile-menu-toggle,
+    #globalMobileMenuBtn {
+        display: none !important;
+    }
+}
