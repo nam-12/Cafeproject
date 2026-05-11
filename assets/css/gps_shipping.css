@@ -1,0 +1,212 @@
+/* ================================================================
+   assets/css/gps_shipping.css
+   Styles cho GPS + Map + Shipping nâng cấp
+   ================================================================ */
+
+/* ── Map Wrapper & Container ────────────────────────────────── */
+#map-wrapper {
+    margin-bottom: 1rem;
+    position: relative;
+}
+#map-wrapper.d-none { display: none !important; }
+
+.map-reveal {
+    animation: mapSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes mapSlideIn {
+    from { opacity: 0; max-height: 0; transform: translateY(-10px); }
+    to   { opacity: 1; max-height: 400px; transform: translateY(0); }
+}
+
+#gps-map-container {
+    width: 100%;
+    height: 280px;
+    border-radius: 12px;
+    border: 2px solid #e8ddd4;
+    overflow: hidden;
+    z-index: 1;
+    background: linear-gradient(135deg, #f5f0eb 0%, #efe8e0 100%);
+}
+
+/* Map header */
+.map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    margin-bottom: 6px;
+}
+.map-header h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #3E2723;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.map-header h6 i { color: #6f4e37; }
+
+/* ── Distance Badge (trên map) ──────────────────────────────── */
+#map-distance-badge {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(62, 39, 35, 0.9);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    z-index: 1000;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    letter-spacing: 0.02em;
+    pointer-events: none;
+}
+
+/* ── Custom Map Markers ─────────────────────────────────────── */
+.custom-marker-icon {
+    background: none !important;
+    border: none !important;
+}
+.map-marker-store {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #6f4e37, #8D6E63);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    box-shadow: 0 3px 10px rgba(111,78,55,0.4);
+    border: 3px solid #fff;
+}
+.map-marker-customer {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #e53935, #ef5350);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    box-shadow: 0 3px 10px rgba(229,57,53,0.4);
+    border: 3px solid #fff;
+    animation: markerBounce 0.5s ease;
+}
+@keyframes markerBounce {
+    0%   { transform: scale(0) translateY(-20px); }
+    60%  { transform: scale(1.2) translateY(0); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+/* ── GPS Button (Lấy vị trí hiện tại) ──────────────────────── */
+.gps-btn-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+#btn-gps-locate {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #6f4e37, #8D6E63);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 10px rgba(111,78,55,0.2);
+    white-space: nowrap;
+}
+#btn-gps-locate:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5D4037, #6f4e37);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(111,78,55,0.3);
+}
+#btn-gps-locate:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+#btn-gps-locate .fa-spin { animation: fa-spin 0.8s linear infinite; }
+
+/* GPS Status Messages */
+.gps-status {
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInSlide 0.3s ease;
+}
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.gps-status.gps-loading {
+    background: rgba(33,150,243,0.08);
+    color: #1565c0;
+    border: 1px solid rgba(33,150,243,0.2);
+}
+.gps-status.gps-success {
+    background: rgba(76,175,80,0.08);
+    color: #2e7d32;
+    border: 1px solid rgba(76,175,80,0.2);
+}
+.gps-status.gps-error {
+    background: rgba(244,67,54,0.08);
+    color: #c62828;
+    border: 1px solid rgba(244,67,54,0.2);
+}
+
+/* ── Fee Tiers Info ─────────────────────────────────────────── */
+.fee-tiers-info {
+    background: linear-gradient(135deg, #fdfaf8, #fff8f4);
+    border: 1px solid #e8ddd4;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+}
+.fee-tiers-info .tier-title {
+    font-weight: 700;
+    color: #3E2723;
+    margin-bottom: 4px;
+    font-size: 0.82rem;
+}
+.fee-tiers-info .tier-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    color: #5D4037;
+}
+.fee-tiers-info .tier-row.active {
+    color: #6f4e37;
+    font-weight: 700;
+    background: rgba(111,78,55,0.06);
+    border-radius: 4px;
+    padding: 3px 6px;
+    margin: 0 -6px;
+}
+
+/* ── Map Skeleton Loading ───────────────────────────────────── */
+.map-skeleton {
+    width: 100%;
+    height: 280px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #f0ebe6 25%, #e8e0d8 50%, #f0ebe6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    #gps-map-container { height: 220px; }
+    #btn-gps-locate { width: 100%; justify-content: center; }
+    .gps-btn-wrapper { flex-direction: column; }
+    #map-distance-badge { font-size: 0.75rem; padding: 5px 12px; }
+}

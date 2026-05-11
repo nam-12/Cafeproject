@@ -852,24 +852,51 @@ CREATE TABLE IF NOT EXISTS `shipping_distance_cache` (
     `address_text` VARCHAR(300) NOT NULL COMMENT 'Địa chỉ gốc',
     `km`           FLOAT        NOT NULL COMMENT 'Khoảng cách km',
     `method`       VARCHAR(50)  NOT NULL COMMENT 'Provider đã dùng',
+    `customer_lat` DOUBLE       DEFAULT NULL COMMENT 'Latitude khách hàng',
+    `customer_lng` DOUBLE       DEFAULT NULL COMMENT 'Longitude khách hàng',
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_address_hash` (`address_hash`),
     INDEX `idx_created`         (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Cache khoảng cách giao hàng';
 
--- Thêm cột distance vào bảng orders (nếu chưa có)
+-- Thêm cột distance + GPS vào bảng orders (nếu chưa có)
 ALTER TABLE `orders`
-    ADD COLUMN IF NOT EXISTS `distance`     FLOAT   DEFAULT NULL COMMENT 'Khoảng cách km từ quán đến KH',
-   
-    ADD COLUMN IF NOT EXISTS `distance_method` VARCHAR(50) DEFAULT NULL COMMENT 'Provider tính khoảng cách';
+    ADD COLUMN IF NOT EXISTS `distance`        FLOAT       DEFAULT NULL COMMENT 'Khoảng cách km từ quán đến KH',
+    ADD COLUMN IF NOT EXISTS `distance_method` VARCHAR(50) DEFAULT NULL COMMENT 'Provider tính khoảng cách',
+    ADD COLUMN IF NOT EXISTS `customer_lat`    DOUBLE      DEFAULT NULL COMMENT 'Latitude vị trí khách hàng (GPS)',
+    ADD COLUMN IF NOT EXISTS `customer_lng`    DOUBLE      DEFAULT NULL COMMENT 'Longitude vị trí khách hàng (GPS)';
 
 -- Tự động xóa cache cũ hơn 7 ngày (chạy định kỳ hoặc thêm vào cron)
 -- DELETE FROM shipping_distance_cache WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY);
 
--- Kiểm tra kết quả
-DESCRIBE shipping_distance_cache;
-DESCRIBE orders;
+-- ============================================
+-- BẢNG PHÍ VẬN CHUYỂN THEO KHOẢNG CÁCH (GPS)
+-- Admin có thể sửa bảng phí mà không cần thay đổi code
+-- ============================================
+CREATE TABLE IF NOT EXISTS `shipping_fee_tiers` (
+    `id`         INT(11)       NOT NULL AUTO_INCREMENT,
+    `min_km`     FLOAT         NOT NULL DEFAULT 0 COMMENT 'Khoảng cách tối thiểu (km)',
+    `max_km`     FLOAT         DEFAULT NULL COMMENT 'Khoảng cách tối đa (km), NULL = không giới hạn',
+    `base_fee`   INT           NOT NULL DEFAULT 0 COMMENT 'Phí cơ bản (VNĐ)',
+    `per_km_fee` INT           NOT NULL DEFAULT 0 COMMENT 'Phí mỗi km thêm (VNĐ), áp dụng cho km vượt min_km',
+    `description` VARCHAR(200) DEFAULT NULL,
+    `is_active`  TINYINT(1)    NOT NULL DEFAULT 1,
+    `sort_order` INT           NOT NULL DEFAULT 0,
+    `created_at` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_active_sort` (`is_active`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Bảng phí vận chuyển theo khoảng cách — admin quản lý';
+
+-- Dữ liệu bảng phí 3 mức:
+-- 0→3km: 15.000đ | 3→5km: 20.000đ | >5km: 20.000đ + 5.000đ/km
+INSERT INTO `shipping_fee_tiers` (`min_km`, `max_km`, `base_fee`, `per_km_fee`, `description`, `is_active`, `sort_order`) VALUES
+(0,    3,    15000, 0,    '0 → 3km: 15.000đ (phí cố định)',            1, 1),
+(3,    5,    20000, 0,    '3 → 5km: 20.000đ (phí cố định)',            1, 2),
+(5,    NULL, 20000, 5000, '> 5km: 20.000đ + 5.000đ mỗi km tiếp theo',  1, 3);
+
 -- ============================================
 -- EVENT SCHEDULER
 -- ============================================

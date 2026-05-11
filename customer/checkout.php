@@ -79,8 +79,11 @@ $navbar_type = 'checkout';
     <title>Thanh toán - Coffee House</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <link rel="stylesheet" href="../assets/css/navbar.css">
     <link rel="stylesheet" href="../assets/css/checkout.css">
+    <link rel="stylesheet" href="../assets/css/gps_shipping.css">
 </head>
 
 <body>
@@ -106,6 +109,8 @@ $navbar_type = 'checkout';
                 <input type="hidden" name="shipping_address" id="hidden_shipping_address" value="<?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?>">
                 <input type="hidden" name="client_shipping_fee" id="input_client_shipping_fee" value="0">
                 <input type="hidden" name="client_distance" id="input_client_distance" value="0">
+                <input type="hidden" name="customer_lat" id="input_customer_lat" value="0">
+                <input type="hidden" name="customer_lng" id="input_customer_lng" value="0">
 
                 <div class="row">
                     <!-- Left Column: Customer Information -->
@@ -146,17 +151,43 @@ $navbar_type = 'checkout';
 
                             <!-- Delivery Address -->
                             <div class="mb-3">
-                                <div class="form-floating">
-                                    <textarea id="delivery_address" name="delivery_address" class="form-control" style="height: 100px;"
-                                        placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-                                        minlength="10" maxlength="500" required autocomplete="street-address"><?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?></textarea>
-                                    <label for="delivery_address">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                <div class="address-input-wrapper">
+                                    <div class="form-floating">
+                                        <textarea id="delivery_address" name="delivery_address" class="form-control" style="height: 100px;"
+                                            placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                                            minlength="10" maxlength="500" required autocomplete="street-address"><?php echo htmlspecialchars($checkout_data['shipping_address'] ?? ''); ?></textarea>
+                                        <label for="delivery_address">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                    </div>
+                                    <!-- Autocomplete dropdown -->
+                                    <ul id="address-suggestions"></ul>
                                 </div>
+
+                                <!-- GPS Button -->
+                                <div class="gps-btn-wrapper mt-2">
+                                    <button type="button" id="btn-gps-locate" title="Sử dụng GPS để lấy vị trí hiện tại">
+                                        <i class="fas fa-crosshairs"></i> Lấy vị trí hiện tại
+                                    </button>
+                                </div>
+
+                                <!-- GPS Status -->
+                                <div id="gps-status" class="gps-status d-none"></div>
+
                                 <div class="form-text text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Nhập đầy đủ để tính phí giao hàng chính xác
+                                    Nhập địa chỉ hoặc bấm "Lấy vị trí hiện tại" để tính phí giao hàng
                                 </div>
                                 <div id="address-error" class="text-danger small mt-1 d-none"></div>
+                            </div>
+
+                            <!-- Map Container -->
+                            <div id="map-wrapper" class="d-none mb-3">
+                                <div class="map-header">
+                                    <h6><i class="fas fa-map-marked-alt"></i> Bản đồ giao hàng</h6>
+                                </div>
+                                <div style="position:relative;">
+                                    <div id="gps-map-container"></div>
+                                    <div id="map-distance-badge" class="d-none"></div>
+                                </div>
                             </div>
 
                             <!-- Shipping Info Box -->
@@ -170,8 +201,10 @@ $navbar_type = 'checkout';
                                             </span>
                                             <span id="ship-km" class="text-muted small ms-1"></span>
                                             <div id="ship-note" class="text-warning small mt-1"></div>
+                                            <div id="ship-breakdown" class="small text-muted mt-1"></div>
+                                            <div id="ship-method" class="mt-1"></div>
                                         </div>
-                                        <span id="ship-fee" class="fw-bold fs-6">--</span>
+                                        <span id="ship-fee" class="fw-bold fs-5">--</span>
                                     </div>
                                 </div>
                             </div>
@@ -679,8 +712,13 @@ $navbar_type = 'checkout';
             });
         })();
     </script>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Shipping CSS & JS -->
     <link rel="stylesheet" href="../assets/css/shipping_v2.css">
-<script src="../assets/js/shipping_v2.js"></script>
+    <script src="../assets/js/gps_map_service.js"></script>
+    <script src="../assets/js/shipping_v2.js"></script>
 
 </body>
 

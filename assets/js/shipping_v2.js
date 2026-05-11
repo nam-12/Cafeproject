@@ -1,25 +1,30 @@
 /**
  * assets/js/shipping_v2.js
+ * ════════════════════════════════════════════════════════════════
  * Module tính phí ship nâng cấp cho checkout.php
+ * Tích hợp GPS + Leaflet Map + Realtime shipping fee
  *
- * TÍNH NĂNG MỚI so với phiên bản cũ:
+ * TÍNH NĂNG:
  *   1. Autocomplete địa chỉ (gợi ý khi gõ)
- *   2. Nút "Dùng vị trí hiện tại" (Geolocation API)
- *   3. Hiển thị tên provider đã dùng (Google/ORS/Ước lượng)
- *   4. Hiển thị bảng phí chi tiết
- *   5. Debounce riêng cho autocomplete (200ms) và tính phí (800ms)
- *   6. Xử lý lỗi chi tiết theo từng trường hợp
+ *   2. Nút "Lấy vị trí hiện tại" (GPS → Map → tính phí tự động)
+ *   3. Hiển thị bản đồ với 2 markers + route
+ *   4. Phí ship realtime khi thay đổi địa chỉ
+ *   5. Bảng phí chi tiết + badge provider
+ *   6. Xử lý lỗi GPS chi tiết
+ *
+ * Dependencies: gps_map_service.js (GPSService, MapService)
+ * ════════════════════════════════════════════════════════════════
  */
-
 (function () {
     'use strict';
 
     // ── Cấu hình ────────────────────────────────────────────────
     const API_URL          = 'api_shipping.php';
-    const DEBOUNCE_CALC_MS = 800;   // Đợi sau khi ngừng gõ để tính phí
-    const DEBOUNCE_SUGG_MS = 300;   // Đợi sau khi gõ để lấy gợi ý
-    const MIN_ADDR_LEN     = 10;    // Độ dài tối thiểu để tính phí
-    const MIN_SUGG_LEN     = 4;     // Độ dài tối thiểu để gợi ý
+    const DEBOUNCE_CALC_MS = 800;
+    const DEBOUNCE_SUGG_MS = 300;
+    const MIN_ADDR_LEN     = 10;
+    const MIN_SUGG_LEN     = 4;
+    const STORE_NAME       = 'Coffee House';
 
     // ── DOM refs ────────────────────────────────────────────────
     const addrInput     = document.getElementById('delivery_address');
@@ -33,8 +38,11 @@
     const shipLoading   = document.getElementById('shipping-loading');
     const addrError     = document.getElementById('address-error');
     const submitWarning = document.getElementById('submit-addr-warning');
-    const geoBtn        = document.getElementById('btn-use-location');
     const suggBox       = document.getElementById('address-suggestions');
+    const gpsBtn        = document.getElementById('btn-gps-locate');
+    const gpsStatus     = document.getElementById('gps-status');
+    const hiddenLat     = document.getElementById('input_customer_lat');
+    const hiddenLng     = document.getElementById('input_customer_lng');
 
     if (!addrInput) return;
 
@@ -43,26 +51,100 @@
     let timerSugg = null;
     let abortCtrl = null;
 
-    // ── OrderState (nếu đã load shipping_state.js) ──────────────
+    // ── OrderState (nếu đã load) ────────────────────────────────
     const State = window.OrderState || null;
 
     // ── Format VND ──────────────────────────────────────────────
     const fmt = n => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
     // ════════════════════════════════════════════════════════════
+    // GPS BUTTON — LẤY VỊ TRÍ HIỆN TẠI
+    // ════════════════════════════════════════════════════════════
+    if (gpsBtn && window.GPSService) {
+        if (!GPSService.supported) {
+            gpsBtn.style.display = 'none';
+        } else {
+            gpsBtn.addEventListener('click', handleGPSClick);
+        }
+    }
+
+    async function handleGPSClick() {
+        gpsBtn.disabled = true;
+        gpsBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang lấy vị trí...';
+        setGPSStatus('loading', 'Đang xác định vị trí GPS của bạn...');
+        clearAddrError();
+
+        try {
+            // 1. Lấy tọa độ GPS
+            const pos = await GPSService.getCurrentPosition();
+            setGPSStatus('success', `Đã xác định vị trí (±${Math.round(pos.accuracy)}m)`);
+
+            // 2. Lưu tọa độ vào hidden inputs
+            if (hiddenLat) hiddenLat.value = pos.lat;
+            if (hiddenLng) hiddenLng.value = pos.lng;
+
+            // 3. Reverse geocode → điền địa chỉ
+            const address = await GPSService.reverseGeocode(pos.lat, pos.lng);
+            if (address) {
+                addrInput.value = address;
+                if (hiddenAddr) hiddenAddr.value = address;
+            }
+
+            // 4. Tính phí ship trực tiếp từ GPS (nhanh hơn vì skip geocode)
+            showLoading(true);
+            const data = await ShippingCalculator.calculateFromGPS(pos.lat, pos.lng);
+
+            if (data.ok) {
+                updateShippingUI(data);
+                // 5. Hiển thị bản đồ
+                if (window.MapService && data.store_lat && data.store_lng) {
+                    await MapService.update(
+                        data.store_lat, data.store_lng,
+                        pos.lat, pos.lng,
+                        data.km, STORE_NAME
+                    );
+                }
+                if (State) State.setShipping(data.shipping_fee, data.km);
+                addrInput.classList.remove('is-invalid-addr');
+                addrInput.classList.add('is-valid-addr');
+            } else {
+                showAddrError(data.msg || 'Không tính được phí ship từ GPS');
+                resetShippingUI();
+            }
+        } catch (err) {
+            setGPSStatus('error', err.message || 'Lỗi GPS. Vui lòng nhập địa chỉ thủ công.');
+            showAddrError(err.message);
+        } finally {
+            showLoading(false);
+            gpsBtn.disabled = false;
+            gpsBtn.innerHTML = '<i class="fas fa-crosshairs"></i> Lấy vị trí hiện tại';
+        }
+    }
+
+    function setGPSStatus(type, msg) {
+        if (!gpsStatus) return;
+        gpsStatus.className = 'gps-status gps-' + type;
+        const icons = { loading: 'fa-circle-notch fa-spin', success: 'fa-check-circle', error: 'fa-exclamation-triangle' };
+        gpsStatus.innerHTML = `<i class="fas ${icons[type] || ''}"></i> ${msg}`;
+        gpsStatus.classList.remove('d-none');
+        // Auto-hide success/error after 8s
+        if (type !== 'loading') {
+            setTimeout(() => gpsStatus.classList.add('d-none'), 8000);
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════
     // AUTOCOMPLETE — GỢI Ý ĐỊA CHỈ
     // ════════════════════════════════════════════════════════════
     async function fetchSuggestions(query) {
         if (query.length < MIN_SUGG_LEN) { hideSuggestions(); return; }
-
         try {
             const res  = await fetch(API_URL, {
-                method:  'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ action: 'suggest', query }),
+                body: JSON.stringify({ action: 'suggest', query }),
             });
             const data = await res.json();
-
             if (data.ok && data.suggestions.length > 0) {
                 renderSuggestions(data.suggestions);
             } else {
@@ -74,14 +156,11 @@
     function renderSuggestions(list) {
         if (!suggBox) return;
         suggBox.innerHTML = '';
-
         list.forEach(item => {
-            const li    = document.createElement('li');
+            const li = document.createElement('li');
             li.className = 'suggestion-item';
-
-            // Highlight phần khớp với text đã gõ
-            const q    = addrInput.value.trim();
-            const idx  = item.text.toLowerCase().indexOf(q.toLowerCase());
+            const q = addrInput.value.trim();
+            const idx = item.text.toLowerCase().indexOf(q.toLowerCase());
             if (idx >= 0) {
                 li.innerHTML = escHtml(item.text.slice(0, idx))
                     + '<strong>' + escHtml(item.text.slice(idx, idx + q.length)) + '</strong>'
@@ -89,23 +168,19 @@
             } else {
                 li.textContent = item.text;
             }
-
             li.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // Giữ focus không rời input
+                e.preventDefault();
                 selectSuggestion(item.text);
             });
-
             suggBox.appendChild(li);
         });
-
         suggBox.style.display = 'block';
     }
 
     function selectSuggestion(text) {
-        addrInput.value  = text;
+        addrInput.value = text;
         if (hiddenAddr) hiddenAddr.value = text;
         hideSuggestions();
-        // Tính phí ngay khi chọn gợi ý
         clearTimeout(timerCalc);
         fetchShippingFee(text);
     }
@@ -115,65 +190,7 @@
     }
 
     // ════════════════════════════════════════════════════════════
-    // GEOLOCATION — NÚT "DÙNG VỊ TRÍ HIỆN TẠI"
-    // ════════════════════════════════════════════════════════════
-    if (geoBtn) {
-        if (!navigator.geolocation) {
-            geoBtn.style.display = 'none';
-        } else {
-            geoBtn.addEventListener('click', () => {
-                geoBtn.disabled     = true;
-                geoBtn.innerHTML    = '<i class="fas fa-circle-notch fa-spin"></i>';
-                addrError.textContent = '';
-                addrError.classList.add('d-none');
-
-                navigator.geolocation.getCurrentPosition(
-                    async (pos) => {
-                        const lat = pos.coords.latitude;
-                        const lng = pos.coords.longitude;
-
-                        // Reverse geocode → lấy địa chỉ từ tọa độ
-                        const address = await reverseGeocode(lat, lng);
-                        if (address) {
-                            addrInput.value          = address;
-                            if (hiddenAddr) hiddenAddr.value = address;
-                            fetchShippingFee(address);
-                        } else {
-                            showAddrError('Không xác định được địa chỉ từ vị trí của bạn');
-                        }
-                        geoBtn.disabled  = false;
-                        geoBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
-                    },
-                    (err) => {
-                        const msgs = {
-                            1: 'Bạn đã từ chối quyền truy cập vị trí',
-                            2: 'Không xác định được vị trí',
-                            3: 'Hết thời gian lấy vị trí',
-                        };
-                        showAddrError(msgs[err.code] || 'Lỗi lấy vị trí');
-                        geoBtn.disabled  = false;
-                        geoBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
-                    },
-                    { timeout: 10000, maximumAge: 60000 }
-                );
-            });
-        }
-    }
-
-    // Reverse geocode tọa độ → địa chỉ (Nominatim)
-    async function reverseGeocode(lat, lng) {
-        try {
-            const url  = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=vi`;
-            const res  = await fetch(url, {
-                headers: { 'User-Agent': 'CafeProject/2.0' },
-            });
-            const data = await res.json();
-            return data.display_name || null;
-        } catch (_) { return null; }
-    }
-
-    // ════════════════════════════════════════════════════════════
-    // TÍNH PHÍ SHIP
+    // TÍNH PHÍ SHIP (từ địa chỉ text)
     // ════════════════════════════════════════════════════════════
     async function fetchShippingFee(address) {
         if (abortCtrl) abortCtrl.abort();
@@ -184,26 +201,18 @@
 
         try {
             const res = await fetch(API_URL, {
-                method:  'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ action: 'calculate', address }),
-                signal:  abortCtrl.signal,
+                body: JSON.stringify({ action: 'calculate', address }),
+                signal: abortCtrl.signal,
             });
 
-            if (!res.ok) {
-            const text = await res.text();
-            console.error('[Shipping API Non-OK]', res.status, text);
-            throw new Error('HTTP ' + res.status);
-        }
+            if (!res.ok) throw new Error('HTTP ' + res.status);
 
             const text = await res.text();
             let data;
-            try {
-                data = JSON.parse(text);
-            } catch (_e) {
-                console.error('[Shipping API Invalid JSON]', text);
-                throw new Error('Invalid JSON response from Shipping API');
-            }
+            try { data = JSON.parse(text); }
+            catch (_e) { throw new Error('Invalid JSON'); }
 
             if (!data.ok && (data.km === undefined || data.km === null || Number(data.km) <= 0)) {
                 showAddrError(data.msg || 'Không tính được phí ship');
@@ -211,24 +220,26 @@
                 return;
             }
 
-            // Cập nhật UI phí ship
             updateShippingUI(data);
 
+            // Hiển thị bản đồ nếu có tọa độ
+            if (window.MapService && data.store_lat && data.customer_lat) {
+                await MapService.update(
+                    data.store_lat, data.store_lng,
+                    data.customer_lat, data.customer_lng,
+                    data.km, STORE_NAME
+                );
+            }
+
             if (data.fallback) {
-                // fallback chỉ cảnh báo, vẫn cho phép đặt hàng
-                showAddrWarning(data.msg || 'Đang dùng ước lượng phí ship (không xác định chính xác địa chỉ).');
+                showAddrWarning(data.msg || 'Đang dùng ước lượng phí ship.');
             } else {
                 clearAddrError();
                 addrInput.classList.remove('is-invalid-addr');
                 addrInput.classList.add('is-valid-addr');
             }
 
-
-            // Cập nhật OrderState nếu có
             if (State) State.setShipping(data.shipping_fee, data.km);
-
-            addrInput.classList.remove('is-invalid-addr');
-            addrInput.classList.add('is-valid-addr');
 
         } catch (err) {
             if (err.name === 'AbortError') return;
@@ -239,49 +250,81 @@
         }
     }
 
+    // ════════════════════════════════════════════════════════════
+    // UI HELPERS
+    // ════════════════════════════════════════════════════════════
     function updateShippingUI(data) {
         if (!shippingBox) return;
-
         shippingBox.classList.remove('d-none');
 
-        if (shipKmEl)     shipKmEl.textContent    = data.km > 0 ? `${data.km} km` : '';
-        if (shipFeeEl)    shipFeeEl.textContent    = data.fee_text || fmt(data.shipping_fee);
-        if (shipNoteEl)   shipNoteEl.textContent   = data.note    || '';
-        if (shipBreakEl)  shipBreakEl.textContent  = data.fee_breakdown || '';
+        if (shipKmEl)    shipKmEl.textContent   = data.km > 0 ? `${data.km} km` : '';
+        if (shipFeeEl)   shipFeeEl.textContent   = data.fee_text || fmt(data.shipping_fee);
+        if (shipNoteEl)  shipNoteEl.textContent   = data.note || '';
+        if (shipBreakEl) shipBreakEl.textContent  = data.fee_breakdown || '';
 
-        // Badge provider (Google / ORS / Ước lượng)
+        // Badge provider
         if (shipMethodEl) {
-            const method  = data.method || '';
-            const isCached = data.from_cache;
+            const m = data.method || '';
             let badge = '';
-
-            if (method.includes('google_maps')) {
-                badge = `<span class="badge-provider google">
-                    <i class="fas fa-map-marker-alt"></i> Google Maps
-                    ${isCached ? '(cache)' : ''}
-                </span>`;
-            } else if (method.includes('openrouteservice')) {
-                badge = `<span class="badge-provider ors">
-                    <i class="fas fa-route"></i> OpenRouteService
-                    ${isCached ? '(cache)' : ''}
-                </span>`;
+            if (m.includes('graphhopper') || m.includes('gps_graphhopper')) {
+                badge = `<span class="badge-provider google"><i class="fas fa-route"></i> Đường thực tế${data.from_cache ? ' (cache)' : ''}</span>`;
+            } else if (m.includes('gps_haversine')) {
+                badge = `<span class="badge-provider ors"><i class="fas fa-satellite"></i> GPS ước lượng</span>`;
+            } else if (m.includes('haversine')) {
+                badge = `<span class="badge-provider osm"><i class="fas fa-map"></i> Ước lượng OSM</span>`;
             } else {
-                badge = `<span class="badge-provider osm">
-                    <i class="fas fa-map"></i> Ước lượng OSM
-                </span>`;
+                badge = `<span class="badge-provider osm"><i class="fas fa-map"></i> ${m}</span>`;
             }
             shipMethodEl.innerHTML = badge;
         }
+
+        // Update summary panel
+        const summaryVal = document.getElementById('shipping-summary-val');
+        if (summaryVal) {
+            summaryVal.innerHTML = `<span style="color:var(--primary-color);font-weight:700">${fmt(data.shipping_fee)}</span>`;
+        }
+
+        // Update hidden inputs
+        const inputFee = document.getElementById('input_client_shipping_fee');
+        const inputKm  = document.getElementById('input_client_distance');
+        if (inputFee) inputFee.value = data.shipping_fee;
+        if (inputKm)  inputKm.value  = data.km;
+
+        // Update total
+        updateTotalDisplay(data.shipping_fee);
     }
 
     function resetShippingUI() {
-        if (shippingBox)  shippingBox.classList.add('d-none');
-        if (shipKmEl)     shipKmEl.textContent   = '';
-        if (shipFeeEl)    shipFeeEl.textContent   = '--';
-        if (shipNoteEl)   shipNoteEl.textContent  = '';
+        if (shippingBox) shippingBox.classList.add('d-none');
+        if (shipKmEl)    shipKmEl.textContent   = '';
+        if (shipFeeEl)   shipFeeEl.textContent   = '--';
+        if (shipNoteEl)  shipNoteEl.textContent  = '';
         if (shipMethodEl) shipMethodEl.innerHTML  = '';
-        if (shipBreakEl)  shipBreakEl.textContent = '';
-        if (State)        State.clearShipping();
+        if (shipBreakEl) shipBreakEl.textContent = '';
+        if (State)       State.clearShipping();
+
+        const summaryVal = document.getElementById('shipping-summary-val');
+        if (summaryVal) summaryVal.innerHTML = '<span class="text-muted small fst-italic">Nhập địa chỉ để tính</span>';
+
+        const inputFee = document.getElementById('input_client_shipping_fee');
+        const inputKm  = document.getElementById('input_client_distance');
+        if (inputFee) inputFee.value = 0;
+        if (inputKm)  inputKm.value  = 0;
+
+        updateTotalDisplay(0);
+    }
+
+    function updateTotalDisplay(shipFee) {
+        const subtotalEl = document.getElementById('input_final_total');
+        const displayEl  = document.getElementById('final_total_display');
+        if (!subtotalEl || !displayEl) return;
+
+        const subtotal = window.cartSubtotal || 0;
+        const discount = window._currentDiscount || 0;
+        const total = Math.max(0, subtotal + shipFee - discount);
+        subtotalEl.value = total;
+        displayEl.textContent = fmt(total);
+        window.shippingFee = shipFee;
     }
 
     function showLoading(on) {
@@ -292,8 +335,7 @@
     function showAddrError(msg) {
         if (!addrError) return;
         addrError.textContent = msg;
-        addrError.classList.remove('d-none');
-        addrError.classList.remove('text-success');
+        addrError.classList.remove('d-none', 'text-success', 'text-warning');
         addrError.classList.add('text-danger');
         addrInput.classList.add('is-invalid-addr');
         addrInput.classList.remove('is-valid-addr');
@@ -302,8 +344,7 @@
     function showAddrWarning(msg) {
         if (!addrError) return;
         addrError.textContent = msg;
-        addrError.classList.remove('d-none');
-        addrError.classList.remove('text-danger');
+        addrError.classList.remove('d-none', 'text-danger');
         addrError.classList.add('text-warning');
         addrInput.classList.remove('is-invalid-addr');
         addrInput.classList.add('is-valid-addr');
@@ -328,15 +369,11 @@
     addrInput.addEventListener('input', function () {
         const val = this.value.trim();
         if (hiddenAddr) hiddenAddr.value = val;
-
-        // Reset cảnh báo
         if (submitWarning) submitWarning.classList.add('d-none');
 
-        // Autocomplete (debounce ngắn)
         clearTimeout(timerSugg);
         timerSugg = setTimeout(() => fetchSuggestions(val), DEBOUNCE_SUGG_MS);
 
-        // Tính phí (debounce dài hơn)
         clearTimeout(timerCalc);
         if (val.length < MIN_ADDR_LEN) {
             resetShippingUI();
@@ -379,7 +416,7 @@
         }
     });
 
-    // Validate trước khi submit form
+    // Validate trước khi submit
     const form = document.getElementById('checkoutForm');
     if (form) {
         form.addEventListener('submit', function (e) {
@@ -396,13 +433,19 @@
         });
     }
 
+    // Coupon event listener
+    document.addEventListener('couponApplied', function(e) {
+        window._currentDiscount = e.detail?.discount || 0;
+        const shipFee = window.shippingFee || 0;
+        updateTotalDisplay(shipFee);
+    });
+
     // Tự động tính phí nếu đã có địa chỉ prefill
     const prefill = addrInput.value.trim();
     if (prefill.length >= MIN_ADDR_LEN) {
         fetchShippingFee(prefill);
     }
 
-    // Export để checkout.php dùng
+    // Export
     window.ShippingModule = { fetchShippingFee, resetShippingUI };
-
 })();

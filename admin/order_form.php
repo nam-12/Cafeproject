@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // Tạo đơn hàng
         $order_number = generateOrderNumber();
-        $stmt = $pdo->prepare("INSERT INTO orders (order_number, customer_name, customer_phone, total_amount, payment_method, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+        $stmt = $pdo->prepare("INSERT INTO orders (order_number, customer_name, customer_phone, total_amount, payment_method, status, completed_at) VALUES (?, ?, ?, ?, ?, 'completed', NOW())");
         $stmt->execute([$order_number, $customer_name, $customer_phone, $total_amount, $payment_method]);
         $order_id = $pdo->lastInsertId();
         

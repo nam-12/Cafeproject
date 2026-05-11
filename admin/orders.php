@@ -324,7 +324,10 @@ while ($row = $stats_stmt->fetch()) {
                     </thead>
                     <tbody>
                         <?php if (count($orders) > 0): ?>
-                            <?php foreach ($orders as $order): ?>
+                            <?php foreach ($orders as $order): 
+                                $o_dist = (float)($order['distance'] ?? 0);
+                                $o_addr = $order['shipping_address'] ?? '';
+                            ?>
                                 <tr>
                                     <td><?php echo $order['order_number']; ?></td>
                                     <td><?php echo $status_labels[$order['status']]; ?>
@@ -337,10 +340,15 @@ while ($row = $stats_stmt->fetch()) {
                                                 <i class="fas fa-eye"></i>
                                             </button>
 
+                                            <a href="print_invoice.php?id=<?= $order['id'] ?>" target="_blank" 
+                                               class="btn btn-outline-secondary" title="In hóa đơn">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+
                                             <?php if ($order['status'] !== 'completed' && $order['status'] !== 'cancelled' && hasPermission('confirm_order')): ?>
                                                 <button class="btn btn-outline-success" data-bs-toggle="modal"
                                                     data-bs-target="#statusModal"
-                                                    onclick="setOrderStatus(<?= $order['id']; ?>, '<?= $order['order_number']; ?>', '<?= $order['status']; ?>', '<?= !empty($order['estimated_delivery_at']) ? date('Y-m-d\\TH:i', strtotime($order['estimated_delivery_at'])) : '' ?>')">
+                                                    onclick="setOrderStatus(<?= $order['id'] ?>, '<?= $order['order_number'] ?>', '<?= $order['status'] ?>', '<?= !empty($order['estimated_delivery_at']) ? date('Y-m-d\TH:i', strtotime($order['estimated_delivery_at'])) : '' ?>', <?= $o_dist ?>, '<?= addslashes($o_addr) ?>')">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             <?php endif; ?>
@@ -448,6 +456,12 @@ while ($row = $stats_stmt->fetch()) {
                             <div class="spinner-border"></div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary" id="btn-print-invoice" onclick="printCurrentOrder()">
+                            <i class="fas fa-print me-1"></i>In hóa đơn
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -471,6 +485,20 @@ while ($row = $stats_stmt->fetch()) {
                                 <label class="form-label">Trạng thái hiện tại</label>
                                 <input type="text" class="form-control" id="status_current_status" readonly style="background: #f8f9fa;">
                             </div>
+
+                            <!-- Thông tin giao hàng -->
+                            <div id="delivery-info-box" class="mb-3 p-3 rounded" style="background: #fdf8f4; border: 1px solid #e8ddd4; display:none;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-motorcycle" style="color:#6f4e37;"></i>
+                                    <strong style="color:#3E2723; font-size:0.9rem;">Thông tin giao hàng</strong>
+                                </div>
+                                <div id="delivery-distance-info" class="small text-muted"></div>
+                                <div id="delivery-address-info" class="small text-muted mt-1" style="word-break:break-word;"></div>
+                                <div id="delivery-estimate-info" class="mt-2">
+                                    <span class="badge bg-info text-white" id="delivery-estimate-badge"></span>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Thời gian dự kiến giao hiện tại</label>
                                 <input type="text" class="form-control" id="status_current_delivery" readonly style="background: #f8f9fa;" placeholder="Chưa cập nhật">
@@ -485,8 +513,14 @@ while ($row = $stats_stmt->fetch()) {
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Thời gian dự kiến giao (tùy chọn)</label>
+                                <label class="form-label">
+                                    Thời gian dự kiến giao 
+                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="btn-auto-estimate" title="Tự động ước lượng từ khoảng cách" style="display:none;">
+                                        <i class="fas fa-magic me-1"></i>Tự động ước lượng
+                                    </button>
+                                </label>
                                 <input type="datetime-local" name="estimated_delivery_at" id="status_estimated_delivery_at" class="form-control" />
+                                <small class="text-muted" id="estimate-helper-text"></small>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -502,7 +536,7 @@ while ($row = $stats_stmt->fetch()) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function setOrderStatus(id, number, current_status, estimated_delivery) {
+        function setOrderStatus(id, number, current_status, estimated_delivery, distance, address) {
             document.getElementById('status_order_id').value = id;
             document.getElementById('status_order_number').value = number;
             document.getElementById('status_estimated_delivery_at').value = '';
@@ -519,13 +553,84 @@ while ($row = $stats_stmt->fetch()) {
             } else {
                 document.getElementById('status_current_delivery').value = 'Chưa cập nhật';
             }
+
+            // Hiển thị thông tin giao hàng + ước lượng thời gian
+            const infoBox = document.getElementById('delivery-info-box');
+            const distInfo = document.getElementById('delivery-distance-info');
+            const addrInfo = document.getElementById('delivery-address-info');
+            const estBadge = document.getElementById('delivery-estimate-badge');
+            const autoBtn  = document.getElementById('btn-auto-estimate');
+            const helperText = document.getElementById('estimate-helper-text');
+
+            if (distance && distance > 0) {
+                infoBox.style.display = 'block';
+                autoBtn.style.display = 'inline-block';
+                
+                distInfo.innerHTML = '<i class="fas fa-route me-1"></i> Khoảng cách: <strong>' + distance.toFixed(1) + ' km</strong>';
+                if (address) {
+                    addrInfo.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> ' + address;
+                } else {
+                    addrInfo.innerHTML = '';
+                }
+
+                // Ước lượng: 25km/h + 10 phút chuẩn bị
+                const travelMin = Math.ceil((distance / 25) * 60);
+                const prepMin = 10;
+                const totalMin = travelMin + prepMin;
+                estBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Ước lượng: ~' + totalMin + ' phút (chuẩn bị ' + prepMin + '\' + di chuyển ' + travelMin + '\' )';
+                helperText.textContent = 'Gợi ý: ~' + totalMin + ' phút từ bây giờ (' + distance.toFixed(1) + 'km × 25km/h + 10\' chuẩn bị)';
+
+                // Auto-estimate button
+                autoBtn.onclick = function() {
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + totalMin);
+                    // Format: YYYY-MM-DDTHH:MM
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth()+1).padStart(2,'0');
+                    const d = String(now.getDate()).padStart(2,'0');
+                    const h = String(now.getHours()).padStart(2,'0');
+                    const mi = String(now.getMinutes()).padStart(2,'0');
+                    document.getElementById('status_estimated_delivery_at').value = y+'-'+m+'-'+d+'T'+h+':'+mi;
+                };
+            } else {
+                infoBox.style.display = 'none';
+                autoBtn.style.display = 'none';
+                helperText.textContent = '';
+            }
         }
 
+        var currentOrderId = null;
+
         function viewOrder(id) {
+            currentOrderId = id;
+            var container = document.getElementById('orderDetail');
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border" style="color:#6f4e37;"></div></div>';
+            
             fetch('order_detail.php?id=' + id)
                 .then(response => response.text())
-                .then(html => { document.getElementById('orderDetail').innerHTML = html; })
-                .catch(() => { document.getElementById('orderDetail').innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu</div>'; });
+                .then(html => {
+                    container.innerHTML = html;
+                    // innerHTML không tự chạy <script> → phải extract và chạy thủ công
+                    var scripts = container.querySelectorAll('script');
+                    scripts.forEach(function(oldScript) {
+                        var newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                })
+                .catch(() => {
+                    container.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu</div>';
+                });
+        }
+
+        function printCurrentOrder() {
+            if (currentOrderId) {
+                window.open('print_invoice.php?id=' + currentOrderId, '_blank');
+            }
         }
 
         // Xử lý menu di động

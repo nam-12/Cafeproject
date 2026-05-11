@@ -94,7 +94,62 @@ if ($action === 'suggest') {
 }
 
 // ════════════════════════════════════════════════════════════════
-// ACTION: calculate — tính khoảng cách và phí ship
+// ACTION: calculate_gps — tính phí ship từ tọa độ GPS trực tiếp
+// Nhanh hơn vì bỏ qua bước geocode
+// ════════════════════════════════════════════════════════════════
+if ($action === 'calculate_gps') {
+    $lat = floatval($body['lat'] ?? 0);
+    $lng = floatval($body['lng'] ?? 0);
+
+    if ($lat == 0 || $lng == 0) {
+        echo json_encode(['ok' => false, 'msg' => 'Tọa độ GPS không hợp lệ']);
+        exit;
+    }
+    // Validate tọa độ trong phạm vi Việt Nam
+    if ($lat < 8.0 || $lat > 24.0 || $lng < 102.0 || $lng > 110.0) {
+        echo json_encode(['ok' => false, 'msg' => 'Tọa độ nằm ngoài phạm vi Việt Nam']);
+        exit;
+    }
+
+    try {
+        $result = resolveShippingDistanceByCoords($lat, $lng, $pdo);
+        $km     = $result['km'];
+        $fee    = calculateShippingFee($km);
+
+        echo json_encode([
+            'ok'           => $result['ok'],
+            'km'           => $km,
+            'shipping_fee' => $fee,
+            'fee_text'     => number_format($fee, 0, ',', '.') . 'đ',
+            'method'       => $result['method'],
+            'from_cache'   => false,
+            'note'         => $result['ok'] ? '✅ Tính từ GPS' : ($result['error'] ?? ''),
+            'fallback'     => false,
+            'fee_breakdown' => _buildFeeBreakdown($km, $fee),
+            'store_lat'    => defined('STORE_LAT') ? (float)STORE_LAT : null,
+            'store_lng'    => defined('STORE_LNG') ? (float)STORE_LNG : null,
+            'customer_lat' => $lat,
+            'customer_lng' => $lng,
+            'polyline'     => $result['polyline'] ?? null,
+        ]);
+    } catch (Exception $e) {
+        error_log("Shipping GPS API error: " . $e->getMessage());
+        echo json_encode(['ok' => false, 'msg' => 'Lỗi tính phí ship từ GPS.']);
+    }
+    exit;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ACTION: get_fee_tiers — trả về bảng phí cho frontend hiển thị
+// ════════════════════════════════════════════════════════════════
+if ($action === 'get_fee_tiers') {
+    $tiers = function_exists('getShippingFeeTiers') ? getShippingFeeTiers($pdo) : [];
+    echo json_encode(['ok' => true, 'tiers' => $tiers]);
+    exit;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ACTION: calculate — tính khoảng cách và phí ship (từ địa chỉ text)
 // ════════════════════════════════════════════════════════════════
 $address = trim($body['address'] ?? '');
 
@@ -144,8 +199,12 @@ try {
         $response['note'] = '✅ Khoảng cách đường thực tế';
     }
 
-    // Thêm bảng phí mô tả
-    $response['fee_breakdown'] = _buildFeeBreakdown($km, $fee);
+    // Thêm tọa độ store cho map
+    $response['store_lat']      = defined('STORE_LAT') ? (float)STORE_LAT : null;
+    $response['store_lng']      = defined('STORE_LNG') ? (float)STORE_LNG : null;
+    $response['customer_lat']   = $result['customer_lat'] ?? null;
+    $response['customer_lng']   = $result['customer_lng'] ?? null;
+    $response['fee_breakdown']  = _buildFeeBreakdown($km, $fee);
 
     echo json_encode($response);
 } catch (Exception $e) {
@@ -204,12 +263,8 @@ function _suggestNominatim(string $query): array {
 
 // ── Mô tả bảng phí để hiển thị cho user ─────────────────────────
 function _buildFeeBreakdown(float $km, int $fee): string {
-    if ($km <= 2)  return "≤ 2km: phí cố định 10.000đ";
-    if ($km <= 5)  return "≤ 5km: phí cố định 15.000đ";
-    if ($km <= 10) {
-        $extra = ceil($km - 5);
-        return "5–10km: 20.000đ + {$extra}km × 3.000đ = " . number_format($fee, 0, ',', '.') . "đ";
-    }
-    $extra = ceil($km - 10);
-    return "> 10km: 35.000đ + {$extra}km × 2.500đ = " . number_format($fee, 0, ',', '.') . "đ";
+    if ($km <= 3)  return "≤ 3km: phí cố định 15.000đ";
+    if ($km <= 5)  return "3–5km: phí cố định 20.000đ";
+    $extra = ceil($km - 5);
+    return "> 5km: 20.000đ + {$extra}km × 5.000đ = " . number_format($fee, 0, ',', '.') . "đ";
 }

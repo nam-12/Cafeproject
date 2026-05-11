@@ -152,11 +152,13 @@ function _distanceGraphHopper(string $address): array {
     }
 
     return [
-        'ok'         => true,
-        'km'         => round($dist / 1000, 2),
-        'method'     => 'graphhopper',
-        'error'      => '',
-        'from_cache' => false,
+        'ok'           => true,
+        'km'           => round($dist / 1000, 2),
+        'method'       => 'graphhopper',
+        'error'        => '',
+        'from_cache'   => false,
+        'customer_lat' => $customerCoords['lat'],
+        'customer_lng' => $customerCoords['lng'],
     ];
 }
 
@@ -282,12 +284,14 @@ function _distanceNominatimHaversine(string $address): array {
     $kmRoad = round($km * HAVERSINE_ROAD_FACTOR, 2);
 
     return [
-        'ok'         => true,
-        'km'         => $kmRoad,
-        'method'     => 'nominatim_haversine',
-        'error'      => '',
-        'from_cache' => false,
-        'note'       => 'Khoảng cách ước lượng',
+        'ok'           => true,
+        'km'           => $kmRoad,
+        'method'       => 'nominatim_haversine',
+        'error'        => '',
+        'from_cache'   => false,
+        'note'         => 'Khoảng cách ước lượng',
+        'customer_lat' => $customerLat,
+        'customer_lng' => $customerLng,
     ];
 }
 
@@ -360,14 +364,131 @@ function _saveDistanceCache(string $address, float $km, string $method, PDO $pdo
 }
 
 // ================================================================
-// TÍNH PHÍ VẬN CHUYỂN THEO KM
+// TÍNH PHÍ VẬN CHUYỂN THEO KM — 3 MỨC MỚI
+// 0→3km: 15.000đ | 3→5km: 20.000đ | >5km: 20.000 + 5.000/km
 // ================================================================
 if (!function_exists('calculateShippingFee')) {
     function calculateShippingFee(float $km): int {
-        if ($km <= 2)  return 10000;
-        if ($km <= 5)  return 15000;
-        if ($km <= 10) return 20000 + (int)(ceil($km - 5) * 3000);
-        // > 10km: cộng thêm 2500đ/km (shipper xa hơn)
-        return 35000 + (int)(ceil($km - 10) * 2500);
+        if ($km <= 3)  return 15000;
+        if ($km <= 5)  return 20000;
+        // > 5km: 20.000đ + 5.000đ × số km vượt quá 5
+        return 20000 + (int)(ceil($km - 5) * 5000);
+    }
+}
+
+// ================================================================
+// TÍNH PHÍ TỪ DB (shipping_fee_tiers) — linh hoạt cho admin
+// ================================================================
+if (!function_exists('calculateShippingFeeFromDB')) {
+    function calculateShippingFeeFromDB(float $km, PDO $pdo): int {
+        try {
+            $stmt = $pdo->query(
+                "SELECT min_km, max_km, base_fee, per_km_fee
+                 FROM shipping_fee_tiers
+                 WHERE is_active = 1
+                 ORDER BY sort_order ASC"
+            );
+            $tiers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($tiers)) return calculateShippingFee($km);
+
+            foreach ($tiers as $tier) {
+                $inRange = ($km > $tier['min_km'])
+                    && ($tier['max_km'] === null || $km <= $tier['max_km']);
+                if ($inRange) {
+                    $extra = max(0, $km - $tier['min_km']);
+                    return (int)$tier['base_fee']
+                         + (int)(ceil($extra) * $tier['per_km_fee']);
+                }
+            }
+            // Nếu không khớp tier nào, dùng tier cuối (max_km=NULL)
+            $last = end($tiers);
+            $extra = max(0, $km - $last['min_km']);
+            return (int)$last['base_fee']
+                 + (int)(ceil($extra) * $last['per_km_fee']);
+        } catch (Exception $e) {
+            return calculateShippingFee($km);
+        }
+    }
+}
+
+// ================================================================
+// LẤY BẢNG PHÍ TỪ DB — trả về cho frontend hiển thị
+// ================================================================
+if (!function_exists('getShippingFeeTiers')) {
+    function getShippingFeeTiers(PDO $pdo): array {
+        try {
+            $stmt = $pdo->query(
+                "SELECT min_km, max_km, base_fee, per_km_fee, description
+                 FROM shipping_fee_tiers
+                 WHERE is_active = 1
+                 ORDER BY sort_order ASC"
+            );
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+}
+
+// ================================================================
+// TÍNH KHOẢNG CÁCH TỪ TỌA ĐỘ GPS (bỏ qua bước geocode)
+// Dùng khi client gửi lat/lng trực tiếp từ GPS
+// ================================================================
+if (!function_exists('resolveShippingDistanceByCoords')) {
+    function resolveShippingDistanceByCoords(
+        float $customerLat,
+        float $customerLng,
+        PDO   $pdo
+    ): array {
+        $storeLat = defined('STORE_LAT') ? (float)STORE_LAT : 0;
+        $storeLng = defined('STORE_LNG') ? (float)STORE_LNG : 0;
+
+        if ($storeLat === 0.0 || $storeLng === 0.0) {
+            return [
+                'ok' => false, 'km' => 0,
+                'method' => 'gps_direct',
+                'error' => 'STORE_LAT/STORE_LNG chưa cấu hình',
+                'from_cache' => false,
+            ];
+        }
+
+        // 1. Thử GraphHopper Routing (đường bộ thực tế)
+        if (defined('GRAPH_HOPPER_API_KEY') && !empty(GRAPH_HOPPER_API_KEY)) {
+            $url = "https://graphhopper.com/api/1/route"
+                 . "?point={$storeLat},{$storeLng}"
+                 . "&point={$customerLat},{$customerLng}"
+                 . "&vehicle=car&locale=vi"
+                 . "&key=" . GRAPH_HOPPER_API_KEY;
+
+            $resp = _httpGet($url);
+            if ($resp !== false) {
+                $data = json_decode($resp, true);
+                $dist = $data['paths'][0]['distance'] ?? null;
+                if ($dist !== null) {
+                    $km = round($dist / 1000, 2);
+                    return [
+                        'ok' => true, 'km' => $km,
+                        'method' => 'gps_graphhopper',
+                        'error' => '', 'from_cache' => false,
+                        'customer_lat' => $customerLat,
+                        'customer_lng' => $customerLng,
+                        'polyline' => $data['paths'][0]['points'] ?? null,
+                    ];
+                }
+            }
+        }
+
+        // 2. Fallback: Haversine
+        $km = _haversineKm($storeLat, $storeLng, $customerLat, $customerLng);
+        $kmRoad = round($km * HAVERSINE_ROAD_FACTOR, 2);
+
+        return [
+            'ok' => true, 'km' => $kmRoad,
+            'method' => 'gps_haversine',
+            'error' => '', 'from_cache' => false,
+            'customer_lat' => $customerLat,
+            'customer_lng' => $customerLng,
+            'note' => 'Ước lượng đường chim bay',
+        ];
     }
 }

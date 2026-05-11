@@ -67,14 +67,30 @@ try {
     // Lấy shipping_fee và distance từ checkout.php (đã tính toán trên client)
     $shippingFee = floatval($_POST['client_shipping_fee'] ?? 0);
     $distance = floatval($_POST['client_distance'] ?? 0);
+    $customerLat = floatval($_POST['customer_lat'] ?? 0);
+    $customerLng = floatval($_POST['customer_lng'] ?? 0);
     
-    // Validation: Nếu không có giá trị từ client, tính mặc định
-    if ($shippingFee <= 0) {
-        $shippingFee = 0;
+    // Server-side re-verify: tính lại phí ship nếu có tọa độ GPS
+    if ($customerLat > 0 && $customerLng > 0) {
+        require_once '../config/shipping_engine.php';
+        $distResult = resolveShippingDistanceByCoords($customerLat, $customerLng, $pdo);
+        if ($distResult['ok']) {
+            $distance = $distResult['km'];
+            $shippingFee = calculateShippingFee($distance);
+        }
+    } elseif (!empty($shipping_address) && $shippingFee <= 0) {
+        // Fallback: tính từ địa chỉ text nếu chưa có phí
+        require_once '../config/shipping_engine.php';
+        $distResult = resolveShippingDistance($shipping_address, $pdo);
+        if ($distResult['ok']) {
+            $distance = $distResult['km'];
+            $shippingFee = calculateShippingFee($distance);
+        }
     }
-    if ($distance <= 0) {
-        $distance = 0;
-    }
+    
+    // Validation: đảm bảo phí ship hợp lệ
+    if ($shippingFee < 0) $shippingFee = 0;
+    if ($distance < 0) $distance = 0;
     $discount_amount = 0;
     $coupon_id = null;
 
@@ -124,14 +140,17 @@ try {
     $stmt = $pdo->prepare("
         INSERT INTO orders 
         (order_number, user_id, customer_name, customer_email, customer_phone, shipping_address, 
-        total_amount, sub_total, shipping_fee, distance, discount_amount, coupon_code, 
-        payment_method, note, status, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        total_amount, sub_total, shipping_fee, distance, customer_lat, customer_lng,
+        discount_amount, coupon_code, payment_method, note, status, created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ");
     
     $stmt->execute([
         $order_number, $user_id, $customer_name, $customer_email, $customer_phone, $shipping_address, 
-        $total, $subtotal, $shippingFee, $distance, $discount_amount, $coupon_code,
+        $total, $subtotal, $shippingFee, $distance, 
+        $customerLat > 0 ? $customerLat : null,
+        $customerLng > 0 ? $customerLng : null,
+        $discount_amount, $coupon_code,
         $payment_method_code, $note, $status
     ]);
     $order_id = $pdo->lastInsertId();
@@ -218,80 +237,4 @@ try {
     
     header('Location: checkout.php');
     exit;
-    // ===== THÊM MỚI: Lấy và validate địa chỉ giao hàng =====
-$delivery_address = trim($_POST['delivery_address'] ?? '');
-
-// Validate phía server — KHÔNG tin dữ liệu client
-if (empty($delivery_address) || mb_strlen($delivery_address) < 10) {
-    $_SESSION['error_msg'] = 'Vui lòng nhập địa chỉ giao hàng đầy đủ (ít nhất 10 ký tự).';
-    header('Location: checkout.php');
-    exit;
-}
-if (mb_strlen($delivery_address) > 500) {
-    $_SESSION['error_msg'] = 'Địa chỉ quá dài.';
-    header('Location: checkout.php');
-    exit;
-}
-
-// Sanitize
-$delivery_address = htmlspecialchars(strip_tags($delivery_address), ENT_QUOTES, 'UTF-8');
-
-// ===== THÊM MỚI: Tính khoảng cách và phí ship TRÊN SERVER =====
-$distResult   = getShippingDistance($delivery_address);
-$distance     = $distResult['km'];          // float, đơn vị km
-$shipping_fee = calculateShippingFee($distance); // int, đơn vị VNĐ
-
-// Ghi log nếu geocode thất bại (nhưng vẫn tiếp tục xử lý)
-if (!$distResult['success']) {
-    error_log("[Order] Shipping warning: " . $distResult['error']);
-}
-
-// ── Giữ nguyên code tính subtotal hiện tại ──
-// Giả sử biến $subtotal đã được tính từ giỏ hàng
-
-$grand_total = $subtotal + $shipping_fee; // Cộng thêm phí ship vào tổng
-
-// ===== SỬA: Câu INSERT — thêm 3 cột mới =====
-// Tìm câu INSERT INTO orders hiện tại trong file và sửa như sau:
-$stmt = $conn->prepare(
-    "INSERT INTO orders 
-     (user_id, delivery_address, subtotal, shipping_fee, distance, total_price, 
-      payment_method, status, note, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, NOW())"
-);
-// Điều chỉnh bind_param theo đúng cột DB của bạn:
-$stmt->bind_param(
-    "isiidiss",
-    $_SESSION['user_id'],  // i
-    $delivery_address,     // s
-    $subtotal,             // i
-    $shipping_fee,         // i
-    $distance,             // d (float)
-    $grand_total,          // i
-    $payment_method,       // s
-    $note                  // s
-);
-
-if (!$stmt->execute()) {
-    error_log("[Order] DB insert error: " . $stmt->error);
-    $_SESSION['error_msg'] = 'Lỗi hệ thống khi lưu đơn hàng, vui lòng thử lại.';
-    header('Location: checkout.php');
-    exit;
-}
-
-$order_id = $conn->insert_id;
-
-// ── Giữ nguyên code lưu order_items, xóa cart... ──
-
-// Lưu thông tin vào session để hiển thị trang thành công
-$_SESSION['last_order'] = [
-    'order_id'     => $order_id,
-    'distance'     => $distance,
-    'shipping_fee' => $shipping_fee,
-    'grand_total'  => $grand_total,
-    'address'      => $delivery_address,
-];
-
-header('Location: order_success.php');
-exit;
 }
