@@ -1,0 +1,206 @@
+  /* ── Reset & Base ────────────────────────────── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2D1B00;
+            background: #f5f0eb;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── Invoice Container ───────────────────────── */
+        .invoice {
+            max-width: 380px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 24px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(45, 27, 0, 0.1);
+            position: relative;
+        }
+
+        /* Decorative top border */
+        .invoice::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6f4e37, #D4AF37, #6f4e37);
+            border-radius: 12px 12px 0 0;
+        }
+
+        /* ── Header ──────────────────────────────────── */
+        .invoice-header {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 2px dashed #e0d5c9;
+            margin-bottom: 14px;
+        }
+        .store-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #3E2723;
+            letter-spacing: 0.03em;
+        }
+        .store-name i { color: #6f4e37; margin-right: 6px; }
+        .store-info {
+            font-size: 0.78rem;
+            color: #8D6E63;
+            margin-top: 4px;
+        }
+        .invoice-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #6f4e37;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── Order Meta ──────────────────────────────── */
+        .order-meta {
+            font-size: 0.82rem;
+            color: #5D4037;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0ebe5;
+        }
+        .order-meta .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+        .order-meta .label { color: #8D6E63; }
+        .order-meta .value { font-weight: 600; text-align: right; }
+
+        /* ── Items Table ─────────────────────────────── */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+            font-size: 0.85rem;
+        }
+        .items-table th {
+            background: #fdf8f4;
+            color: #5D4037;
+            font-weight: 700;
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 2px solid #e8ddd4;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2) { text-align: center; }
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3),
+        .items-table th:nth-child(4),
+        .items-table td:nth-child(4) { text-align: right; }
+        .items-table td {
+            padding: 7px 6px;
+            border-bottom: 1px solid #f5f0eb;
+        }
+        .items-table tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Totals ──────────────────────────────────── */
+        .totals {
+            border-top: 2px dashed #e0d5c9;
+            padding-top: 10px;
+            margin-bottom: 14px;
+        }
+        .totals .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.85rem;
+        }
+        .totals .row.shipping { color: #6f4e37; }
+        .totals .row.discount { color: #e53935; }
+        .totals .row.grand {
+            border-top: 2px solid #3E2723;
+            margin-top: 6px;
+            padding-top: 8px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #2D1B00;
+        }
+
+        /* ── Delivery Info ───────────────────────────── */
+        .delivery-info {
+            background: #fdf8f4;
+            border: 1px solid #e8ddd4;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            margin-bottom: 14px;
+            color: #5D4037;
+        }
+        .delivery-info .title {
+            font-weight: 700;
+            color: #3E2723;
+            margin-bottom: 4px;
+            font-size: 0.82rem;
+        }
+        .delivery-info .title i { color: #6f4e37; margin-right: 4px; }
+
+        /* ── Footer ──────────────────────────────────── */
+        .invoice-footer {
+            text-align: center;
+            border-top: 2px dashed #e0d5c9;
+            padding-top: 14px;
+            color: #8D6E63;
+            font-size: 0.78rem;
+        }
+        .invoice-footer .thanks {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #6f4e37;
+            margin-bottom: 4px;
+        }
+
+        /* ── Print Controls ──────────────────────────── */
+        .print-controls {
+            text-align: center;
+            margin: 16px auto;
+            max-width: 380px;
+        }
+        .print-controls button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 0 4px;
+            transition: all 0.2s ease;
+        }
+        .btn-print {
+            background: linear-gradient(135deg, #6f4e37, #8D6E63);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(111,78,55,0.25);
+        }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(111,78,55,0.35); }
+        .btn-back {
+            background: #f0ebe5;
+            color: #5D4037;
+        }
+        .btn-back:hover { background: #e8ddd4; }
+
+        /* ── Print Styles ────────────────────────────── */
+        @media print {
+            body { background: #fff; }
+            .invoice {
+                max-width: 100%;
+                margin: 0;
+                padding: 10px;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .invoice::before { display: none; }
+            .print-controls { display: none !important; }
+            @page {
+                size: 80mm auto;
+                margin: 2mm;
+            }
+        }

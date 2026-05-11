@@ -33,7 +33,8 @@ $total_pages = ceil($total_products / $limit);
 // 3. Truy vấn danh sách sản phẩm theo trang
 $sql = "SELECT p.*, c.name as category_name, i.quantity as stock,
         COUNT(DISTINCT pr.id) as review_count,
-        ROUND(AVG(pr.rating), 1) as avg_rating
+        ROUND(AVG(pr.rating), 1) as avg_rating,
+        (SELECT SUM(quantity) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE oi2.product_id = p.id AND o2.status != 'cancelled') as sold_count
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN inventory i ON p.id = i.product_id
@@ -161,11 +162,17 @@ function renderProductCard($product) {
     echo '<div class="product-category-premium">' . htmlspecialchars($product['category_name']) . '</div>';
     echo '<h3 class="product-title-premium">' . htmlspecialchars($product['name']) . '</h3>';
 
-    // Rating
-    if (isset($product['avg_rating']) && $product['avg_rating'] > 0) {
-        echo '<div class="product-rating-premium mb-2"><span class="text-warning small">' . number_format($product['avg_rating'], 1) . ' <i class="fas fa-star"></i></span>';
-        echo '<span class="rating-count-premium ms-1">(' . $product['review_count'] . ')</span></div>';
-    }
+    // Stats
+    echo '<div class="product-stats-premium" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px dashed #eee; padding-bottom: 0.5rem;">';
+    echo '<div class="product-rating-premium" style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: 600; color: #444;">';
+    echo '<i class="fas fa-star text-warning"></i>';
+    echo '<span>' . ($product['avg_rating'] ?: '0') . '</span>';
+    echo '<small class="text-muted" style="font-weight: 400;">(' . $product['review_count'] . ')</small>';
+    echo '</div>';
+    echo '<div class="product-sold-premium" style="font-size: 0.85rem; color: #777; font-weight: 500;">';
+    echo 'Đã bán ' . ($product['sold_count'] ?: '0');
+    echo '</div>';
+    echo '</div>';
 
     // Price
     echo '<div class="product-price-premium">';

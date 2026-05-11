@@ -41,7 +41,8 @@ try {
         SELECT 
             oi.*,
             p.name as product_name,
-            p.image as product_image
+            p.image as product_image,
+            (SELECT id FROM product_reviews pr WHERE pr.order_id = oi.order_id AND pr.product_id = oi.product_id LIMIT 1) as review_id
         FROM order_items oi
         LEFT JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = ?
@@ -234,6 +235,11 @@ $show_success = isset($_GET['success']) && $_GET['success'] == 1;
                         <div class="flex-grow-1">
                             <h5 style="margin-bottom: 0.5rem; color: var(--primary-color);">
                                 <?php echo htmlspecialchars($item['product_name']); ?>
+                                <?php if (!empty($item['review_id'])): ?>
+                                    <span class="badge bg-success ms-2" style="font-size: 0.7rem; font-weight: 500;">
+                                        <i class="fas fa-check-circle me-1"></i>Đã đánh giá
+                                    </span>
+                                <?php endif; ?>
                             </h5>
                             <p style="margin-bottom: 0; color: #6c757d;">
                                 Số lượng: <strong>x<?php echo $item['quantity']; ?></strong> - 

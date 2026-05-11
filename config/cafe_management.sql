@@ -238,6 +238,7 @@ CREATE TABLE product_reviews (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NULL,
     product_id INT NOT NULL,
+    order_id INT NULL,
     customer_name VARCHAR(100) NOT NULL,
     customer_email VARCHAR(100),
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
@@ -249,6 +250,7 @@ CREATE TABLE product_reviews (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
     INDEX idx_product_rating (product_id, rating),
     INDEX idx_user (user_id),
     INDEX idx_status (status)

@@ -26,7 +26,8 @@ try {
     $orders_stmt = $pdo->prepare("
         SELECT 
             o.*,
-            COUNT(oi.id) AS item_count
+            COUNT(DISTINCT oi.id) AS item_count,
+            (SELECT COUNT(*) FROM product_reviews pr WHERE pr.order_id = o.id) AS review_count
         FROM orders o
         LEFT JOIN order_items oi ON o.id = oi.order_id
         WHERE o.user_id = ?
@@ -58,8 +59,10 @@ if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
     try {
         // Lấy thông tin đơn hàng (hỗ trợ user_id hoặc customer_id)
         $detail_stmt = $pdo->prepare("
-            SELECT * FROM orders 
-            WHERE id = ? AND user_id = ?
+            SELECT o.*, 
+                   (SELECT COUNT(*) FROM product_reviews pr WHERE pr.order_id = o.id) AS review_count 
+            FROM orders o
+            WHERE o.id = ? AND o.user_id = ?
         ");
         $detail_stmt->execute([$order_id, $user_id]);
         $order_detail = $detail_stmt->fetch(PDO::FETCH_ASSOC);
@@ -392,10 +395,22 @@ foreach ($orders as $order) {
                             Xem chi tiết
                         </a>
                         <?php if ($order['status'] === 'completed'): ?>
-                        <a href="review.php?order_id=<?php echo $order['id']; ?>" class="btn-premium btn-review">
-                            <i class="fas fa-star"></i>
-                            Đánh giá
-                        </a>
+                            <?php if ($order['review_count'] >= $order['item_count']): ?>
+                            <a href="review.php?order_id=<?php echo $order['id']; ?>" class="btn-premium btn-review" style="background: var(--coffee-light); color: var(--coffee-dark);">
+                                <i class="fas fa-check-circle"></i>
+                                Xem đánh giá
+                            </a>
+                            <?php elseif ($order['review_count'] > 0): ?>
+                            <a href="review.php?order_id=<?php echo $order['id']; ?>" class="btn-premium btn-review" style="background: var(--gold); color: #000;">
+                                <i class="fas fa-star-half-alt"></i>
+                                Đánh giá tiếp
+                            </a>
+                            <?php else: ?>
+                            <a href="review.php?order_id=<?php echo $order['id']; ?>" class="btn-premium btn-review">
+                                <i class="fas fa-star"></i>
+                                Đánh giá
+                            </a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -713,10 +728,25 @@ foreach ($orders as $order) {
                         Quay lại danh sách
                     </a>
                     <?php if ($order_detail['status'] === 'completed'): ?>
-                    <a href="review.php?order_id=<?php echo $order_detail['id']; ?>" class="btn-premium btn-review">
-                        <i class="fas fa-star me-2"></i>
-                        Đánh giá sản phẩm
-                    </a>
+                        <?php 
+                        // Đếm số lượng item thực tế trong detail view (đã fetch sẵn ở $order_items)
+                        $totalItemsInOrder = count($order_items);
+                        if ($order_detail['review_count'] >= $totalItemsInOrder): ?>
+                        <a href="review.php?order_id=<?php echo $order_detail['id']; ?>" class="btn-premium btn-review me-3" style="background: var(--coffee-light); color: var(--coffee-dark);">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Xem đánh giá
+                        </a>
+                        <?php elseif ($order_detail['review_count'] > 0): ?>
+                        <a href="review.php?order_id=<?php echo $order_detail['id']; ?>" class="btn-premium btn-review me-3" style="background: var(--gold); color: #000;">
+                            <i class="fas fa-star-half-alt me-2"></i>
+                            Đánh giá tiếp
+                        </a>
+                        <?php else: ?>
+                        <a href="review.php?order_id=<?php echo $order_detail['id']; ?>" class="btn-premium btn-review me-3">
+                            <i class="fas fa-star me-2"></i>
+                            Đánh giá sản phẩm
+                        </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <a href="index.php" class="btn-premium btn-review">
                         <i class="fas fa-shopping-bag me-2"></i>

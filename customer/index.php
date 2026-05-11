@@ -35,7 +35,8 @@ $total_pages = ceil($total_products / $limit);
 // 2. Lấy danh sách sản phẩm (Lần tải đầu tiên)
 $sql = "SELECT p.*, c.name as category_name, i.quantity as stock,
         COUNT(DISTINCT pr.id) as review_count,
-        ROUND(AVG(pr.rating), 1) as avg_rating
+        ROUND(AVG(pr.rating), 1) as avg_rating,
+        (SELECT SUM(quantity) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE oi2.product_id = p.id AND o2.status != 'cancelled') as sold_count
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN inventory i ON p.id = i.product_id
@@ -208,6 +209,17 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                                     <div class="product-body-premium">
                                         <div class="product-category-premium"><?= htmlspecialchars($product['category_name']); ?></div>
                                         <h3 class="product-title-premium"><?= htmlspecialchars($product['name']); ?></h3>
+
+                                        <div class="product-stats-premium" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px dashed #eee; padding-bottom: 0.5rem;">
+                                            <div class="product-rating-premium" style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: 600; color: #444;">
+                                                <i class="fas fa-star text-warning"></i>
+                                                <span><?= $product['avg_rating'] ?: '0'; ?></span>
+                                                <small class="text-muted" style="font-weight: 400;">(<?= $product['review_count']; ?>)</small>
+                                            </div>
+                                            <div class="product-sold-premium" style="font-size: 0.85rem; color: #777; font-weight: 500;">
+                                                Đã bán <?= $product['sold_count'] ?: '0'; ?>
+                                            </div>
+                                        </div>
 
                                         <div class="product-price-premium">
                                             <?php if ($showDiscount): ?>

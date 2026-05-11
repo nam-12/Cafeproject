@@ -19,7 +19,10 @@ try {
         SELECT 
             p.*,
             c.name as category_name,
-            i.quantity as stock
+            i.quantity as stock,
+            (SELECT COUNT(*) FROM product_reviews pr WHERE pr.product_id = p.id AND pr.status = 'approved') as review_count,
+            (SELECT ROUND(AVG(rating), 1) FROM product_reviews pr WHERE pr.product_id = p.id AND pr.status = 'approved') as avg_rating,
+            (SELECT SUM(quantity) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE oi2.product_id = p.id AND o2.status != 'cancelled') as sold_count
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN inventory i ON p.id = i.product_id

@@ -253,7 +253,12 @@ $hasMoreProducts = count($products) > $initialDisplay;
                     <div class="col-md-7">
                         <h3 id="detailName" style="color: #c19b76;"></h3>
                         <p id="detailCategory" class="badge bg-secondary mb-3"></p>
-                        <h4 id="detailPrice" class="mb-3"></h4>
+                        <h4 id="detailPrice" class="mb-2"></h4>
+                        <div id="detailStats" class="mb-3 d-flex align-items-center gap-3" style="font-size: 0.95rem; font-weight: 500;">
+                            <span style="color: #ffc107;"><i class="fas fa-star me-1"></i><span id="detailAvgRating">0</span></span>
+                            <span class="text-light-50" style="opacity: 0.5;">|</span>
+                            <span class="text-light-50" style="opacity: 0.8;">Đã bán <span id="detailSold">0</span></span>
+                        </div>
                         <div class="mb-3" style="font-size: 0.9rem; border-left: 3px solid #c19b76; padding-left: 15px;">
                             <p class="mb-1"><strong>Thành phần:</strong> <span id="detailIngredients"></span></p>
                             <p class="mb-0"><strong>Năng lượng:</strong> <span id="detailCalories"></span> kcal</p>
@@ -407,6 +412,8 @@ function populateProductModal(product) {
     document.getElementById('detailImage').src = imgSrc;
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailCategory').textContent = product.category_name || 'Cà phê';
+    document.getElementById('detailAvgRating').textContent = product.avg_rating || '0';
+    document.getElementById('detailSold').textContent = product.sold_count || '0';
 
     const priceContainer = document.getElementById('detailPrice');
     const now = new Date();
