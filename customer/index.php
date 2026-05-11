@@ -70,20 +70,40 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     
     <style>
         .pagination-container { margin-top: 50px; display: flex; justify-content: center; }
-        .pagination-premium .page-link {
-            border: none; background: #f8f5f2; color: #6f4e37; margin: 0 5px;
-            border-radius: 50% !important; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; cursor: pointer;
-        }
-        .pagination-premium .page-item.active .page-link {
-            background: #6f4e37; color: white; box-shadow: 0 4px 10px rgba(111, 78, 55, 0.3);
-        }
         .info-item { display: block !important; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .info-item .label { font-weight: 700; color: #6f4e37; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 0.8rem; }
         .info-item .value { display: block; line-height: 1.6; color: #333; }
         .empty-state-premium { text-align: center; padding: 50px; color: #999; }
         .empty-state-premium i { font-size: 3rem; margin-bottom: 15px; }
+
+        /* Load More Button */
+        .load-more-container { text-align: center; margin-top: 40px; }
+        .btn-load-more {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 40px; border: 2px solid #6f4e37; background: transparent;
+            color: #6f4e37; border-radius: 50px; font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: all 0.35s ease; letter-spacing: 0.02em;
+        }
+        .btn-load-more:hover {
+            background: #6f4e37; color: #fff;
+            box-shadow: 0 6px 20px rgba(111,78,55,0.3); transform: translateY(-2px);
+        }
+        .btn-load-more:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+        }
+        .btn-load-more .spinner-border {
+            width: 18px; height: 18px; border-width: 2px;
+        }
+        .load-more-count {
+            display: block; margin-top: 10px; font-size: 0.85rem; color: #8D6E63;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card-premium.fade-in {
+            animation: fadeInUp 0.4s ease forwards;
+        }
     </style>
 </head>
 
@@ -142,7 +162,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
 
             <div id="productListing">
                 <?php if (count($products) > 0): ?>
-                    <div class="row g-4">
+                    <div class="row g-4" id="productGrid">
                         <?php foreach ($products as $product): 
                             $now = time();
                             $startDate = $product['discount_start_date'] ? strtotime($product['discount_start_date']) : 0;
@@ -207,18 +227,14 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                     </div>
 
                     <?php if ($total_pages > 1): ?>
-                    <div class="pagination-container">
-                        <nav>
-                            <ul class="pagination pagination-premium">
-                                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                                        <a class="page-link" href="javascript:void(0)" onclick="changePage(<?= $i ?>)">
-                                            <?= $i ?>
-                                        </a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+                    <div class="load-more-container" id="loadMoreContainer">
+                        <button class="btn-load-more" id="btnLoadMore" onclick="loadMoreProducts()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Xem thêm sản phẩm</span>
+                        </button>
+                        <span class="load-more-count" id="loadMoreCount">
+                            Đang hiển thị <?= count($products) ?> / <?= $total_products ?> sản phẩm
+                        </span>
                     </div>
                     <?php endif; ?>
 
@@ -295,8 +311,9 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/ai_search.js"></script>
     <script>
-        // Khai báo biến toàn cục bằng 'let' để có thể ghi đè khi AJAX fetch_products.php
         let currentProducts = <?php echo json_encode($products); ?>;
+        let loadMorePage = 1;
+        let totalProductsCount = <?= $total_products ?>;
         const INITIAL_SEARCH = '<?php echo addslashes($search); ?>';
         const INITIAL_CATEGORY_ID = '<?php echo addslashes($category_filter); ?>';
 

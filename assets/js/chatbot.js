@@ -229,7 +229,7 @@
 
   // Giới hạn nhập hiển thị ký tự còn lại
   input.addEventListener("input", function () {
-    const remaining = 300 - this.value.length;
+    const remaining = 1000 - this.value.length;
     sendBtn.title = remaining < 50 ? `Còn ${remaining} ký tự` : "";
   });
 })();

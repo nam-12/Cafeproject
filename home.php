@@ -89,6 +89,29 @@ $hasMoreProducts = count($products) > $initialDisplay;
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="./assets/css/home.css">
+    <style>
+        .load-more-container { text-align: center; margin-top: 40px; }
+        .btn-load-more {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 40px; border: 2px solid #c19b76; background: transparent;
+            color: #c19b76; border-radius: 50px; font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: all 0.35s ease; letter-spacing: 0.02em;
+        }
+        .btn-load-more:hover {
+            background: #c19b76; color: #140f0a;
+            box-shadow: 0 6px 20px rgba(193,155,118,0.3); transform: translateY(-2px);
+        }
+        .load-more-count {
+            display: block; margin-top: 10px; font-size: 0.85rem; color: #8D6E63;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-item.fade-in {
+            animation: fadeInUp 0.4s ease forwards;
+        }
+    </style>
 </head>
 <body>
 
@@ -200,10 +223,14 @@ $hasMoreProducts = count($products) > $initialDisplay;
         </div>
         
         <?php if ($hasMoreProducts): ?>
-        <div class="text-center mt-5 reveal">
-            <button id="toggleProductsBtn" class="btn btn-outline-primary btn-lg px-5">
-                <i class="fas fa-plus me-2"></i>Xem thêm sản phẩm
+        <div class="load-more-container reveal" id="loadMoreContainer">
+            <button id="loadMoreBtn" class="btn-load-more" onclick="loadMoreHome()">
+                <i class="fas fa-plus-circle"></i>
+                <span>Xem thêm sản phẩm</span>
             </button>
+            <span class="load-more-count" id="loadMoreCount">
+                Đang hiển thị <?= $initialDisplay ?> / <?= count($products) ?> sản phẩm
+            </span>
         </div>
         <?php endif; ?>
     </div>
@@ -415,27 +442,37 @@ const swiper = new Swiper('.reviewsSwiper', {
     }
 });
 
-// Toggle products visibility
-const toggleBtn = document.getElementById('toggleProductsBtn');
-let isExpanded = false;
+// Load more products - hiện thêm 8 sản phẩm mỗi lần
+let currentShown = initialDisplay;
+const totalProducts = products.length;
+const batchSize = 8;
 
-if (toggleBtn) {
-    toggleBtn.addEventListener('click', function() {
-        const items = document.querySelectorAll('.product-item');
-        
-        if (!isExpanded) {
-            items.forEach(el => el.classList.remove('d-none'));
-            this.innerHTML = '<i class="fas fa-minus me-2"></i>Hiển thị bớt';
-            isExpanded = true;
-        } else {
-            items.forEach((el, idx) => {
-                if (idx >= initialDisplay) el.classList.add('d-none');
-            });
-            this.innerHTML = '<i class="fas fa-plus me-2"></i>Xem thêm sản phẩm';
-            isExpanded = false;
-            document.getElementById('menu').scrollIntoView({ behavior: 'smooth' });
+function loadMoreHome() {
+    const items = document.querySelectorAll('.product-item');
+    const nextBatch = Math.min(currentShown + batchSize, totalProducts);
+
+    for (let i = currentShown; i < nextBatch; i++) {
+        if (items[i]) {
+            items[i].classList.remove('d-none');
+            items[i].classList.add('fade-in');
+            items[i].style.animationDelay = ((i - currentShown) * 0.08) + 's';
         }
-    });
+    }
+
+    currentShown = nextBatch;
+
+    // Cập nhật counter
+    const countEl = document.getElementById('loadMoreCount');
+    if (countEl) {
+        countEl.textContent = 'Đang hiển thị ' + currentShown + ' / ' + totalProducts + ' sản phẩm';
+    }
+
+    // Ẩn nút khi đã hiển hết
+    if (currentShown >= totalProducts) {
+        const btn = document.getElementById('loadMoreBtn');
+        if (btn) btn.style.display = 'none';
+        if (countEl) countEl.textContent = 'Đã hiển thị tất cả ' + totalProducts + ' sản phẩm';
+    }
 }
 </script>
 

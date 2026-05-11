@@ -55,19 +55,17 @@ const searchInput = document.getElementById('searchInput');
 let currentCategoryId = typeof INITIAL_CATEGORY_ID !== 'undefined' ? INITIAL_CATEGORY_ID : '';
 
 /**
- * Hàm lấy sản phẩm từ server (AJAX)
- * @param {string} searchQuery - Từ khóa tìm kiếm
- * @param {string} categoryId - ID danh mục
- * @param {number} page - Trang hiện tại
+ * Hàm lấy sản phẩm từ server (AJAX) — mode replace (dùng khi filter/search)
  */
 function fetchProducts(searchQuery, categoryId, page = 1) {
     if (!productListing) return;
     
-    // Hiển thị hiệu ứng loading
+    // Reset load more state
+    loadMorePage = 1;
+    
     productListing.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x" style="color: #6f4e37;"></i><p class="mt-3">Đang tải sản phẩm...</p></div>';
 
-    // Xây dựng URL cho AJAX bao gồm tham số page
-    let url = `fetch_products.php?search=${encodeURIComponent(searchQuery)}&page=${page}`;
+    let url = `fetch_products.php?search=${encodeURIComponent(searchQuery)}&page=${page}&mode=replace`;
     if (categoryId) {
         url += `&category=${categoryId}`;
     }
@@ -75,19 +73,25 @@ function fetchProducts(searchQuery, categoryId, page = 1) {
     fetch(url)
         .then(response => response.text())
         .then(html => {
-            // 1. Thay thế nội dung HTML
             productListing.innerHTML = html;
 
-            // 2. CẬP NHẬT DỮ LIỆU JS: Tìm thẻ textarea ẩn và cập nhật biến currentProducts
+            // Cập nhật dữ liệu JS
             const dataElement = document.getElementById('ajax_product_data');
             if (dataElement) {
                 try {
-                    // Cập nhật biến toàn cục currentProducts với dữ liệu mới
                     currentProducts = JSON.parse(dataElement.value);
-                    console.log("Đã cập nhật dữ liệu sản phẩm mới:", currentProducts);
                 } catch (e) {
-                    console.error("Lỗi khi parse dữ liệu sản phẩm:", e);
+                    console.error("Lỗi parse dữ liệu:", e);
                 }
+            }
+
+            // Cập nhật metadata
+            const metaEl = document.getElementById('replace_meta');
+            if (metaEl) {
+                try {
+                    const meta = JSON.parse(metaEl.textContent);
+                    totalProductsCount = meta.total;
+                } catch(e) {}
             }
         })
         .catch(error => {
@@ -97,24 +101,89 @@ function fetchProducts(searchQuery, categoryId, page = 1) {
 }
 
 /**
- * Hàm xử lý khi người dùng nhấn chuyển trang
- * @param {number} pageNumber - Số trang được nhấn
+ * Hàm "Xem thêm sản phẩm" — append thêm cards vào grid hiện tại
  */
-function changePage(pageNumber) {
-    const searchQuery = searchInput ? searchInput.value : '';
-    
-    // Cập nhật URL trên thanh địa chỉ trình duyệt để người dùng có thể copy/back
-    const newUrl = `index.php?page=${pageNumber}&search=${encodeURIComponent(searchQuery)}&category=${currentCategoryId}`;
-    history.pushState(null, '', newUrl);
+function loadMoreProducts() {
+    const btn = document.getElementById('btnLoadMore');
+    const countEl = document.getElementById('loadMoreCount');
+    if (!btn) return;
 
-    // Gọi fetch lấy dữ liệu cho trang mới
-    fetchProducts(searchQuery, currentCategoryId, pageNumber);
-    
-    // Cuộn lên đầu danh sách sản phẩm để người dùng dễ quan sát
-    const productSection = document.querySelector('.products-premium');
-    if (productSection) {
-        productSection.scrollIntoView({ behavior: 'smooth' });
+    // Loading state
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border" role="status"></span><span>Đang tải...</span>';
+
+    loadMorePage++;
+    const searchQuery = searchInput ? searchInput.value : '';
+
+    let url = `fetch_products.php?search=${encodeURIComponent(searchQuery)}&page=${loadMorePage}&mode=append`;
+    if (currentCategoryId) {
+        url += `&category=${currentCategoryId}`;
     }
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            // Tìm grid container
+            let grid = document.getElementById('productGrid');
+            if (!grid) {
+                grid = productListing.querySelector('.row');
+            }
+
+            if (grid) {
+                // Tạo temp container để parse HTML
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+
+                // Lấy metadata
+                const metaEl = temp.querySelector('#append_meta');
+                let meta = null;
+                if (metaEl) {
+                    try {
+                        meta = JSON.parse(metaEl.textContent);
+                        metaEl.remove();
+                    } catch(e) {}
+                }
+
+                // Append từng product card vào grid
+                const cards = temp.querySelectorAll('.col-lg-3, .col-md-4, .col-sm-6');
+                cards.forEach((card, i) => {
+                    card.style.animationDelay = (i * 0.08) + 's';
+                    grid.appendChild(card);
+                });
+
+                // Cập nhật dữ liệu JS
+                if (meta && meta.products) {
+                    currentProducts = currentProducts.concat(meta.products);
+                }
+
+                // Cập nhật UI
+                if (meta) {
+                    if (countEl) {
+                        countEl.textContent = 'Đang hiển thị ' + meta.shown + ' / ' + meta.total + ' sản phẩm';
+                    }
+
+                    if (!meta.has_more) {
+                        // Ẩn nút, hiện thông báo đã hết
+                        btn.style.display = 'none';
+                        if (countEl) {
+                            countEl.textContent = 'Đã hiển thị tất cả ' + meta.total + ' sản phẩm';
+                        }
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi load more:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        });
 }
 
 // 1. Xử lý nút Tìm kiếm (Search)

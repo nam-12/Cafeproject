@@ -5,6 +5,7 @@ require_once '../config/helpers.php';
 // 1. Lấy tham số từ AJAX request
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $category_filter = isset($_GET['category']) ? $_GET['category'] : '';
+$mode = isset($_GET['mode']) ? $_GET['mode'] : 'replace'; // 'replace' hoặc 'append'
 $limit = 8; // Số lượng sản phẩm mỗi trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
@@ -54,102 +55,132 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 4. Hiển thị HTML cho sản phẩm
 if (count($products) > 0) {
-    echo '<div class="row g-4">';
-    foreach ($products as $product) {
-        // --- Logic xử lý giảm giá thời gian thực ---
-        $now = time();
-        $startDate = $product['discount_start_date'] ? strtotime($product['discount_start_date']) : 0;
-        $endDate = $product['discount_end_date'] ? strtotime($product['discount_end_date']) : 2147483647;
-        
-        $isPromoActive = ($product['discount_type'] !== 'none' && $now >= $startDate && $now <= $endDate);
-        $showDiscount = ($isPromoActive && !empty($product['sale_price']) && $product['sale_price'] < $product['price']);
-        
-        $finalPrice = $showDiscount ? $product['sale_price'] : $product['price'];
-        $isFeatured = ($product['is_featured'] == 1);
 
-        // --- Logic xử lý ảnh ---
-        $image = str_replace(['uploads/', '/uploads/'], '', $product['image'] ?? '');
-        $webImagePath = (empty($image) || !file_exists(__DIR__ . "/../admin/uploads/" . $image)) 
-                        ? "../admin/uploads/no-image.jpg" 
-                        : "../admin/uploads/" . $image;
+    // Tính số sản phẩm đã hiển thị tính đến trang hiện tại
+    $shown_count = min($page * $limit, $total_products);
+    $has_more = ($page < $total_pages);
 
-        echo '<div class="col-lg-3 col-md-4 col-sm-6">';
-        echo '<div class="product-card-premium" onclick="showProductDetail(' . $product['id'] . ')">';
-        
-        // Nhãn Badge
-        echo '<div class="product-badges" style="position: absolute; top: 10px; left: 10px; z-index: 5; display:flex; flex-direction:column; gap:5px;">';
-        if ($isFeatured) {
-            echo '<span class="badge bg-warning text-dark shadow-sm"><i class="fas fa-crown"></i> Nổi bật</span>';
+    // Mode append: chỉ trả về các product cards (không wrapper)
+    if ($mode === 'append') {
+        foreach ($products as $product) {
+            renderProductCard($product);
         }
-        if ($showDiscount) {
-            $percent = round((1 - ($product['sale_price'] / $product['price'])) * 100);
-            echo '<span class="badge bg-danger shadow-sm">-' . $percent . '%</span>';
+
+        // Trả metadata qua hidden element
+        echo '<script type="application/json" id="append_meta">';
+        echo json_encode([
+            'products'    => $products,
+            'shown'       => $shown_count,
+            'total'       => $total_products,
+            'has_more'    => $has_more,
+            'current_page'=> $page,
+        ]);
+        echo '</script>';
+    } 
+    // Mode replace: trả toàn bộ (dùng khi filter/search)
+    else {
+        echo '<div class="row g-4" id="productGrid">';
+        foreach ($products as $product) {
+            renderProductCard($product);
         }
         echo '</div>';
 
-        echo '<div class="product-image-premium">';
-        echo '<img src="' . htmlspecialchars($webImagePath) . '" alt="' . htmlspecialchars($product['name']) . '">';
-        if ($product['stock'] <= 5 && $product['stock'] > 0) {
-            echo '<span class="product-badge-premium"><i class="fas fa-fire me-1"></i>Sắp hết</span>';
-        }
-        echo '</div>';
-
-        echo '<div class="product-body-premium">';
-        echo '<div class="product-category-premium">' . htmlspecialchars($product['category_name']) . '</div>';
-        echo '<h3 class="product-title-premium">' . htmlspecialchars($product['name']) . '</h3>';
-
-        // Rating
-        if ($product['avg_rating'] > 0) {
-            echo '<div class="product-rating-premium mb-2"><span class="text-warning small">' . number_format($product['avg_rating'], 1) . ' <i class="fas fa-star"></i></span>';
-            echo '<span class="rating-count-premium ms-1">(' . $product['review_count'] . ')</span></div>';
-        }
-
-        // Giá
-        echo '<div class="product-price-premium">';
-        if ($showDiscount) {
-            echo '<span class="price-old">' . number_format($product['price'], 0, ',', '.') . '₫</span>';
-            echo '<span class="price-new">' . number_format($product['sale_price'], 0, ',', '.') . '₫</span>';
+        // Load More button
+        if ($has_more) {
+            echo '<div class="load-more-container" id="loadMoreContainer">';
+            echo '<button class="btn-load-more" id="btnLoadMore" onclick="loadMoreProducts()">';
+            echo '<i class="fas fa-plus-circle"></i><span>Xem thêm sản phẩm</span></button>';
+            echo '<span class="load-more-count" id="loadMoreCount">';
+            echo 'Đang hiển thị ' . $shown_count . ' / ' . $total_products . ' sản phẩm</span>';
+            echo '</div>';
         } else {
-            echo '<span class="price-new">' . number_format($product['price'], 0, ',', '.') . '₫</span>';
+            echo '<div class="load-more-container"><span class="load-more-count">Đã hiển thị tất cả ' . $total_products . ' sản phẩm</span></div>';
         }
-        echo '</div>';
 
-        echo '<div class="product-stock-premium ' . ($product['stock'] <= 10 ? 'low' : '') . '">';
-        echo '<i class="fas fa-box-open"></i><span>Còn ' . $product['stock'] . ' ly</span></div>';
-
-        if ($product['stock'] > 0) {
-            echo '<button class="btn-add-cart-premium" onclick="addToCart(' . $product['id'] . ', \'' . addslashes($product['name']) . '\', ' . $finalPrice . ', ' . $product['stock'] . '); event.stopPropagation();">';
-            echo '<i class="fas fa-cart-plus"></i> Thêm vào giỏ</button>';
-        } else {
-            echo '<button class="btn-add-cart-premium" disabled><i class="fas fa-times-circle"></i> Hết hàng</button>';
-        }
-        
-        echo '</div>'; 
-        echo '</div>'; 
-        echo '</div>'; 
+        // Cập nhật biến dữ liệu JS
+        echo '<textarea id="ajax_product_data" style="display:none;">' . json_encode($products) . '</textarea>';
+        echo '<script type="application/json" id="replace_meta">' . json_encode([
+            'total' => $total_products,
+            'shown' => $shown_count,
+            'has_more' => $has_more,
+        ]) . '</script>';
     }
-    echo '</div>';
-
-    // 5. Hiển thị thanh phân trang bằng AJAX
-    if ($total_pages > 1) {
-        echo '<div class="pagination-container mt-5 d-flex justify-content-center">';
-        echo '<nav><ul class="pagination pagination-premium">';
-        for ($i = 1; $i <= $total_pages; $i++) {
-            $activeClass = ($i == $page) ? 'active' : '';
-            echo '<li class="page-item ' . $activeClass . '">';
-            echo '<a class="page-link" href="javascript:void(0)" onclick="changePage(' . $i . ')">' . $i . '</a>';
-            echo '</li>';
-        }
-        echo '</ul></nav></div>';
-    }
-
-    // 6. QUAN TRỌNG: Cập nhật biến dữ liệu JS để hàm showProductDetail hoạt động ở trang mới
-    echo '<textarea id="ajax_product_data" style="display:none;">' . json_encode($products) . '</textarea>';
 
 } else {
     echo '<div class="empty-state-premium text-center p-5">';
     echo '<i class="fas fa-search fa-3x mb-3" style="color: #ccc;"></i><h3>Không tìm thấy sản phẩm</h3>';
     echo '<p>Vui lòng thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác.</p>';
     echo '</div>';
+}
+
+// ── Hàm render 1 product card ──────────────────────────────────
+function renderProductCard($product) {
+    $now = time();
+    $startDate = $product['discount_start_date'] ? strtotime($product['discount_start_date']) : 0;
+    $endDate = $product['discount_end_date'] ? strtotime($product['discount_end_date']) : 2147483647;
+    $isPromoActive = ($product['discount_type'] !== 'none' && $now >= $startDate && $now <= $endDate);
+    $showDiscount = ($isPromoActive && !empty($product['sale_price']) && $product['sale_price'] < $product['price']);
+    $finalPrice = $showDiscount ? $product['sale_price'] : $product['price'];
+    $isFeatured = ($product['is_featured'] == 1);
+
+    $image = str_replace(['uploads/', '/uploads/'], '', $product['image'] ?? '');
+    $webImagePath = (empty($image) || !file_exists(__DIR__ . "/../admin/uploads/" . $image)) 
+                    ? "../admin/uploads/no-image.jpg" 
+                    : "../admin/uploads/" . $image;
+
+    echo '<div class="col-lg-3 col-md-4 col-sm-6">';
+    echo '<div class="product-card-premium fade-in" onclick="showProductDetail(' . $product['id'] . ')">';
+    
+    // Badges
+    echo '<div class="product-badges" style="position: absolute; top: 10px; left: 10px; z-index: 5; display:flex; flex-direction:column; gap:5px;">';
+    if ($isFeatured) {
+        echo '<span class="badge bg-warning text-dark shadow-sm"><i class="fas fa-crown"></i> Nổi bật</span>';
+    }
+    if ($showDiscount) {
+        $percent = round((1 - ($product['sale_price'] / $product['price'])) * 100);
+        echo '<span class="badge bg-danger shadow-sm">-' . $percent . '%</span>';
+    }
+    echo '</div>';
+
+    echo '<div class="product-image-premium">';
+    echo '<img src="' . htmlspecialchars($webImagePath) . '" alt="' . htmlspecialchars($product['name']) . '">';
+    if ($product['stock'] <= 5 && $product['stock'] > 0) {
+        echo '<span class="product-badge-premium"><i class="fas fa-fire me-1"></i>Sắp hết</span>';
+    }
+    echo '</div>';
+
+    echo '<div class="product-body-premium">';
+    echo '<div class="product-category-premium">' . htmlspecialchars($product['category_name']) . '</div>';
+    echo '<h3 class="product-title-premium">' . htmlspecialchars($product['name']) . '</h3>';
+
+    // Rating
+    if (isset($product['avg_rating']) && $product['avg_rating'] > 0) {
+        echo '<div class="product-rating-premium mb-2"><span class="text-warning small">' . number_format($product['avg_rating'], 1) . ' <i class="fas fa-star"></i></span>';
+        echo '<span class="rating-count-premium ms-1">(' . $product['review_count'] . ')</span></div>';
+    }
+
+    // Price
+    echo '<div class="product-price-premium">';
+    if ($showDiscount) {
+        echo '<span class="price-old">' . number_format($product['price'], 0, ',', '.') . '₫</span>';
+        echo '<span class="price-new">' . number_format($product['sale_price'], 0, ',', '.') . '₫</span>';
+    } else {
+        echo '<span class="price-new">' . number_format($product['price'], 0, ',', '.') . '₫</span>';
+    }
+    echo '</div>';
+
+    echo '<div class="product-stock-premium ' . ($product['stock'] <= 10 ? 'low' : '') . '">';
+    echo '<i class="fas fa-box-open"></i><span>Còn ' . $product['stock'] . ' ly</span></div>';
+
+    if ($product['stock'] > 0) {
+        echo '<button class="btn-add-cart-premium" onclick="addToCart(' . $product['id'] . ', \'' . addslashes($product['name']) . '\', ' . $finalPrice . ', ' . $product['stock'] . '); event.stopPropagation();">';
+        echo '<i class="fas fa-cart-plus"></i> Thêm vào giỏ</button>';
+    } else {
+        echo '<button class="btn-add-cart-premium" disabled><i class="fas fa-times-circle"></i> Hết hàng</button>';
+    }
+    
+    echo '</div>'; 
+    echo '</div>'; 
+    echo '</div>'; 
 }
 ?>

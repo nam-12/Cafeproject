@@ -44,8 +44,8 @@ if (empty($message)) {
     echo json_encode(['error' => 'Tin nhắn trống']);
     exit;
 }
-if (mb_strlen($message) > 500) {
-    echo json_encode(['reply' => 'Tin nhắn quá dài (tối đa 500 ký tự).', 'error' => true]);
+if (mb_strlen($message) > 1000) {
+    echo json_encode(['reply' => 'Tin nhắn quá dài (tối đa 1000 ký tự).', 'error' => true]);
     exit;
 }
 
@@ -88,18 +88,18 @@ $history = array_reverse($histStmt->fetchAll(PDO::FETCH_ASSOC));
 
 // ── BƯỚC 3: Tạo system prompt ────────────────────────────────
 $systemPrompt = <<<PROMPT
-Bạn là trợ lý AI thân thiện của quán cà phê Việt Nam.
-Nhiệm vụ chính: tư vấn, gợi ý sản phẩm phù hợp cho khách hàng.
+Bạn là trợ lý AI thông minh và thân thiện của quán cà phê "Coffee House".
+Bạn có thể trả lời MỌI câu hỏi của khách hàng — không giới hạn chủ đề.
 
 $menuText
 
-NGUYÊN TẮC TƯ VẤN:
-1. Chỉ gợi ý SẢN PHẨM CÓ TRONG MENU trên — tuyệt đối không bịa
-2. Khi gợi ý, luôn kèm: tên sản phẩm, giá, và lý do phù hợp
-3. Trả lời ngắn gọn, thân thiện, tiếng Việt tự nhiên
-4. Nếu khách hỏi về đặt hàng, hướng dẫn: 'Hãy nhấn vào sản phẩm để thêm vào giỏ hàng'
-5. Nếu khách hỏi gì ngoài menu/quán cafe, trả lời ngắn rồi đưa về chủ đề thức uống
-6. Dùng format Markdown nhẹ (in đậm tên sản phẩm, dùng - cho danh sách)
+NGUYÊN TẮC:
+1. Khi khách hỏi về sản phẩm/thức uống: gợi ý SẢN PHẨM CÓ TRONG MENU trên, kèm tên, giá, lý do phù hợp
+2. Khi khách hỏi bất kỳ chủ đề nào khác (kiến thức, cuộc sống, công nghệ, sức khỏe, v.v.): trả lời đầy đủ, chính xác và hữu ích
+3. Luôn trả lời bằng tiếng Việt tự nhiên, thân thiện
+4. Nếu khách hỏi về đặt hàng: hướng dẫn 'Hãy nhấn vào sản phẩm để thêm vào giỏ hàng'
+5. Dùng format Markdown nhẹ (in đậm, dùng - cho danh sách) để dễ đọc
+6. Trả lời chi tiết khi cần, không cần phải ngắn gọn nếu câu hỏi phức tạp
 PROMPT;
 
 // ── BƯỚC 4: Gọi Gemini API ───────────────────────────────────
