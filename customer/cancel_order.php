@@ -26,9 +26,9 @@ try {
     $db = getDB();
     $db->beginTransaction();
     
-    // 3. Lấy thông tin đơn hàng
-    $stmt = $db->prepare("SELECT * FROM orders WHERE id = ?");
-    $stmt->execute([$orderId]);
+    // 3. Lấy thông tin đơn hàng (có kiểm tra user_id để bảo mật)
+    $stmt = $db->prepare("SELECT * FROM orders WHERE id = ? AND user_id = ?");
+    $stmt->execute([$orderId, $_SESSION['user_id']]);
     $order = $stmt->fetch();
     
     if (!$order) {

@@ -412,6 +412,12 @@ foreach ($orders as $order) {
                             </a>
                             <?php endif; ?>
                         <?php endif; ?>
+                        <?php if ($order['status'] === 'pending'): ?>
+                        <button type="button" class="btn-premium btn-danger-premium" onclick="cancelOrder(<?php echo $order['id']; ?>, '<?php echo htmlspecialchars($order['order_number']); ?>')">
+                            <i class="fas fa-times-circle"></i>
+                            Hủy đơn
+                        </button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -748,6 +754,12 @@ foreach ($orders as $order) {
                         </a>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <?php if ($order_detail['status'] === 'pending'): ?>
+                    <button type="button" class="btn-premium btn-danger-premium me-3" onclick="cancelOrder(<?php echo $order_detail['id']; ?>, '<?php echo htmlspecialchars($order_detail['order_number']); ?>')">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Hủy đơn hàng
+                    </button>
+                    <?php endif; ?>
                     <a href="index.php" class="btn-premium btn-review">
                         <i class="fas fa-shopping-bag me-2"></i>
                         Tiếp tục mua sắm
@@ -759,6 +771,42 @@ foreach ($orders as $order) {
     </section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function cancelOrder(orderId, orderNumber) {
+            if (confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${orderNumber}?`)) {
+                const formData = new FormData();
+                formData.append('order_id', orderId);
+                formData.append('csrf_token', '<?php echo generateCSRFToken(); ?>');
+
+                // Loading state
+                const btn = event.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+
+                fetch('cancel_order.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi hủy đơn hàng!');
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi kết nối đến máy chủ!');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                });
+            }
+        }
+
         // Smooth scroll to top when viewing order detail
         <?php if ($order_detail): ?>
         window.scrollTo({

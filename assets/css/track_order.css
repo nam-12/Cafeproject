@@ -439,3 +439,16 @@ h5 {
         font-size: 1.4rem;
     }
 }
+
+.btn-danger-premium {
+    background: linear-gradient(135deg, #721c24 0%, #a52834 100%);
+    color: #f8d7da !important;
+    border: 2px solid #dc3545 !important;
+}
+
+.btn-danger-premium:hover {
+    background: linear-gradient(135deg, #dc3545 0%, #ff4d5e 100%);
+    color: var(--white) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+}

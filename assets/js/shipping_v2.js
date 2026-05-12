@@ -88,6 +88,13 @@
             if (address) {
                 addrInput.value = address;
                 if (hiddenAddr) hiddenAddr.value = address;
+                console.log('[GPS] Address found:', address);
+            } else {
+                // Fallback: nếu không lấy được tên địa chỉ, điền tọa độ để người dùng vẫn tính được phí
+                const fallbackAddr = `Vị trí GPS: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                addrInput.value = fallbackAddr;
+                if (hiddenAddr) hiddenAddr.value = fallbackAddr;
+                console.warn('[GPS] Reverse geocode failed, using coordinates as fallback.');
             }
 
             // 4. Tính phí ship trực tiếp từ GPS (nhanh hơn vì skip geocode)
@@ -322,6 +329,9 @@
         const subtotal = window.cartSubtotal || 0;
         const discount = window._currentDiscount || 0;
         const total = Math.max(0, subtotal + shipFee - discount);
+        
+        console.log('[Shipping] Updating Total:', { subtotal, shipFee, discount, total });
+        
         subtotalEl.value = total;
         displayEl.textContent = fmt(total);
         window.shippingFee = shipFee;
