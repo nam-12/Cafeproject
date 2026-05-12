@@ -123,6 +123,7 @@
     box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
     text-decoration: none;
     white-space: nowrap;
+    position: relative;
 }
 
 .cart-btn-premium:hover {
