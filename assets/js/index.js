@@ -251,6 +251,51 @@ function handleCategoryClick(element) {
 // CÁC HIỆU ỨNG GIAO DIỆN KHÁC
 // ===================================================
 
+/**
+ * Hiệu ứng kéo chuột để cuộn danh mục (Drag to Scroll)
+ */
+function initCategoryDragScroll() {
+    const slider = document.querySelector('.category-scroll');
+    if (!slider) return;
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.style.cursor = 'grabbing';
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+    
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.style.cursor = 'grab';
+    });
+    
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.style.cursor = 'grab';
+    });
+    
+    slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2; // Tốc độ cuộn
+        slider.scrollLeft = scrollLeft - walk;
+    });
+
+    // Style ban đầu
+    slider.style.cursor = 'grab';
+}
+
+// Khởi tạo khi DOM sẵn sàng
+document.addEventListener('DOMContentLoaded', () => {
+    initCategoryDragScroll();
+});
+
 // Smooth scroll effect
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {

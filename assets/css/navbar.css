@@ -69,8 +69,8 @@
     font-size: 0.85rem;
     letter-spacing: 0.8px;
     border-radius: 8px;
-    margin: 0 0.2rem;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .nav-link-premium::after {
@@ -121,8 +121,8 @@
     transition: var(--transition);
     border: none;
     box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
-    position: relative;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .cart-btn-premium:hover {
@@ -184,8 +184,8 @@
         letter-spacing: 0;
     }
     .cart-btn-premium {
-        padding: 9px 14px;
-        font-size: 0.75rem;
+        padding: 8px 12px;
+        font-size: 0.7rem;
         letter-spacing: 0;
     }
 }
